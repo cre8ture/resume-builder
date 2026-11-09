@@ -2,8 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./kai-icon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kinetic Endeavors — Interactive 3D Machine Resume</title>
+  <title>Kinetic Endeavors — Interactive 3D Machine Resume | Kai Kleinbard</title>
+  <meta name="description" content="Kinetic Endeavors by Kai Kleinbard — An interactive 3D machine resume and resume-to-machine compiler that turns engineering endeavors and PDF resumes into explorable 3D kinetic diagrams." />
+  <meta name="author" content="Kai Kleinbard" />
+
+  <!-- Open Graph / LinkedIn Featured Image Metadata -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cre8ture.github.io/resume-builder/" />
+  <meta property="og:site_name" content="Kinetic Endeavors — Kai Kleinbard" />
+  <meta property="og:title" content="Kinetic Endeavors — Interactive 3D Machine Resume" />
+  <meta property="og:description" content="Interactive 3D machine resume and compiler by Kai Kleinbard. Explore engineering systems as kinetic 3D assemblies or compile any PDF resume into 3D machines." />
+  <meta property="og:image" content="https://cre8ture.github.io/resume-builder/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Kinetic Endeavors — Interactive 3D Machine Resume by Kai Kleinbard" />
+
+  <!-- Twitter / X Card Metadata -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kinetic Endeavors — Interactive 3D Machine Resume" />
+  <meta name="twitter:description" content="Interactive 3D machine resume and compiler by Kai Kleinbard. Explore engineering systems as kinetic 3D assemblies or compile any PDF resume into 3D machines." />
+  <meta name="twitter:image" content="https://cre8ture.github.io/resume-builder/og-image.png" />
+  <meta name="twitter:image:alt" content="Kinetic Endeavors — Interactive 3D Machine Resume by Kai Kleinbard" />
+
+  <link rel="image_src" href="https://cre8ture.github.io/resume-builder/og-image.png" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -175,7 +199,7 @@
     }
     @media (min-width: 768px) {
       body.diagram-mode .callout-tag {
-        width: clamp(184px, 19.5vw, 238px);
+        width: clamp(210px, 22vw, 272px);
         padding: 10px 12px;
       }
     }
@@ -196,6 +220,19 @@
       padding-top: 6px;
       border-top: 1px solid var(--border-hairline);
     }
+    body.diagram-mode .callout-tag .diagram-node-content-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    body.diagram-mode .callout-tag .diagram-mini-canvas {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-primary);
+      display: block;
+    }
     body.diagram-mode .callout-tag .tag-title {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 600;
@@ -212,6 +249,8 @@
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      flex: 1;
+      min-width: 0;
     }
     body.diagram-mode .callout-tag .diagram-node-footer {
       display: flex;
@@ -549,8 +588,8 @@
         id: 'quantum-sky',
         num: '01',
         title: 'Project 137: Quantum Sky',
-        indexPhrase: 'DDIL multi-agent mesh',
-        hook: 'Distributed AI agent mesh keeping search-and-rescue, medical, and intelligence teams operational when networks fail.',
+        indexPhrase: 'DDIL multi-agent systems',
+        hook: 'Distributed AI agent systems keeping search-and-rescue, medical, and intelligence teams operational when networks fail.',
         role: 'AI/ML Principal Engineer · Tech Lead',
         period: 'Feb 2026 – Present',
         summary: 'Architected distributed AI agentic systems for mission-critical Denied, Degraded, Intermittent, and Limited (DDIL) field environments alongside a unified enterprise intelligence platform serving 1,000+ employees.',
@@ -560,11 +599,11 @@
           { label: 'Domains', value: 'SAR / Med / Intel' }
         ],
         nodes: [
-          { id: '01', name: 'DDIL Agent Orchestrator', detail: 'Coordinates autonomous task routing when primary satellite or cellular links drop out.', pos: [0, 0.2, 0] },
-          { id: '02', name: 'Search & Rescue Node', detail: 'Processes field telemetry locally to guide emergency response teams in zero-connectivity zones.', pos: [-2.3, 1.3, 0.8] },
-          { id: '03', name: 'Medical Triage Relay', detail: 'Buffers and prioritizes clinical diagnostics across intermittent tactical radio hops.', pos: [2.3, 1.2, -0.7] },
-          { id: '04', name: 'Tactical Intel Sync Valve', detail: 'Gates and compresses high-priority intelligence packets during brief bandwidth windows.', pos: [-2.0, -1.3, -0.9] },
-          { id: '05', name: '1,000+ Employee Knowledge Hub', detail: 'Unifies cross-organization enterprise intelligence into a single queryable graph.', pos: [2.2, -1.2, 0.9] }
+          { id: '01', name: 'DDIL Multi-Agent Architecture', detail: 'Coordinates autonomous task routing when primary satellite or cellular links drop out.', pos: [0, 0.2, 0] },
+          { id: '02', name: 'Search & Rescue Field AI', detail: 'Processes field telemetry locally to guide emergency response teams in zero-connectivity zones.', pos: [-2.3, 1.3, 0.8] },
+          { id: '03', name: 'Medical Triage Support', detail: 'Buffers and prioritizes clinical diagnostics across intermittent tactical radio links.', pos: [2.3, 1.2, -0.7] },
+          { id: '04', name: 'Tactical Intelligence Sync', detail: 'Synchronizes and compresses high-priority intelligence updates during brief bandwidth windows.', pos: [-2.0, -1.3, -0.9] },
+          { id: '05', name: '1,000+ Employee Intelligence Platform', detail: 'Unifies cross-organization enterprise knowledge into a single queryable platform.', pos: [2.2, -1.2, 0.9] }
         ]
       },
       {
@@ -572,7 +611,7 @@
         num: '02',
         title: 'Harvard Edge Lab: Quarch',
         indexPhrase: 'Parallel edge AI evaluation',
-        hook: 'Parallel multi-agent evaluation factory benchmarking 100,000 educational records for on-device edge AI.',
+        hook: 'Parallel multi-agent assessment pipeline benchmarking 100,000 educational records for on-device edge AI.',
         role: 'Harvard Edge Computing Researcher',
         period: 'Jan 2024 – Present',
         summary: 'Built the Quarch parallel multi-agent assessment pipeline for a 100k dataset at Harvard Edge Computing Lab, supported by Google and Qualcomm to deploy educational AI directly onto constrained edge hardware.',
@@ -582,55 +621,55 @@
           { label: 'Target', value: 'On-Device Edge AI' }
         ],
         nodes: [
-          { id: '01', name: '100k Quarch Dataset Belt', detail: 'Streams 100,000 structured benchmark items continuously into the evaluation pipeline.', pos: [-2.6, -0.6, 0.5] },
-          { id: '02', name: 'Parallel Multi-Agent Mill', detail: 'Runs concurrent grading and verification agents across partitioned dataset shards.', pos: [-0.8, 0.9, 0] },
-          { id: '03', name: 'Assessment Scoring Pistons', detail: 'Validates model reasoning accuracy and latency constraints per sample.', pos: [0.6, 0.8, 0.6] },
-          { id: '04', name: 'Google / Qualcomm Edge Runtime', detail: 'Quantizes and compiles validated models for low-power Qualcomm and Google NPU targets.', pos: [1.6, -0.2, -0.5] },
-          { id: '05', name: 'EdTech Device Deployment', detail: 'Packages offline-capable AI tutors for classroom hardware without cloud dependency.', pos: [2.7, -0.5, 0.4] }
+          { id: '01', name: '100k Quarch Dataset', detail: 'Streams 100,000 structured benchmark items continuously into the evaluation pipeline.', pos: [-2.6, -0.6, 0.5] },
+          { id: '02', name: 'Parallel Multi-Agent Assessment', detail: 'Runs concurrent grading and verification agents across partitioned dataset shards.', pos: [-0.8, 0.9, 0] },
+          { id: '03', name: 'Accuracy & Latency Benchmarking', detail: 'Validates model reasoning accuracy and latency constraints per sample.', pos: [0.6, 0.8, 0.6] },
+          { id: '04', name: 'Google & Qualcomm Edge AI', detail: 'Quantizes and compiles validated models for low-power Qualcomm and Google edge targets.', pos: [1.6, -0.2, -0.5] },
+          { id: '05', name: 'Educational AI Deployment', detail: 'Packages offline-capable AI tutors for classroom hardware without cloud dependency.', pos: [2.7, -0.5, 0.4] }
         ]
       },
       {
         id: 'avaya-genai',
         num: '03',
-        title: 'Avaya GenAI Orchestration',
-        indexPhrase: 'Chatbot & demo synthesis',
-        hook: 'Frontend orchestration engine that weaves conversational AI flows and generates live custom client demos on demand.',
+        title: 'Avaya',
+        indexPhrase: 'GenAI chatbot & demo tools',
+        hook: 'Generative AI chatbot frontend orchestration, automated client demo website generation, and real-time data visualization.',
         role: 'Software Engineer · Generative AI Full Stack',
         period: 'Jan 2024 – 2026',
         summary: 'Designed and built generative AI chatbot frontend orchestration, automated website generation tools for tailored enterprise demos, and real-time data visualization pipelines at Avaya.',
         metrics: [
-          { label: 'Core System', value: 'Chatbot Orchestrator' },
-          { label: 'Automation', value: 'Live Demo Builder' },
-          { label: 'Analytics', value: 'Data Viz Engine' }
+          { label: 'Core System', value: 'Chatbot Orchestration' },
+          { label: 'Automation', value: 'Website Demo Generator' },
+          { label: 'Analytics', value: 'Data Visualization' }
         ],
         nodes: [
-          { id: '01', name: 'GenAI Chatbot Intake Drum', detail: 'Ingests multi-turn customer intents and normalizes context for downstream agents.', pos: [-2.4, 0.2, 0] },
-          { id: '02', name: 'Frontend Orchestration Loom', detail: 'Routes live streaming LLM responses into interactive UI state transitions.', pos: [0, 1.3, 0] },
-          { id: '03', name: 'Website Demo Generator Press', detail: 'Synthesizes customized, branded client demo web applications in seconds.', pos: [0.4, -0.4, 1.0] },
-          { id: '04', name: 'Data Orchestration Bus', detail: 'Synchronizes enterprise CRM and telemetry streams with conversational state.', pos: [2.2, 0.7, -0.6] },
-          { id: '05', name: 'Live Telemetry Equalizer', detail: 'Renders real-time conversation metrics and sentiment analytics for operators.', pos: [2.2, -0.9, 0.7] }
+          { id: '01', name: 'GenAI Chatbot Frontend', detail: 'Captures multi-turn customer intents and manages conversational UI state.', pos: [-2.4, 0.2, 0] },
+          { id: '02', name: 'Frontend AI Orchestration', detail: 'Routes live streaming LLM responses into interactive UI state transitions.', pos: [0, 1.3, 0] },
+          { id: '03', name: 'Automated Website Demo Generator', detail: 'Generates customized, branded client demo web applications on demand.', pos: [0.4, -0.4, 1.0] },
+          { id: '04', name: 'Enterprise Data Orchestration', detail: 'Synchronizes enterprise CRM and backend services with conversational state.', pos: [2.2, 0.7, -0.6] },
+          { id: '05', name: 'Real-Time Data Visualization', detail: 'Renders live conversation metrics and analytics dashboards for enterprise teams.', pos: [2.2, -0.9, 0.7] }
         ]
       },
       {
         id: 'mlsysbook-tinytorch',
         num: '04',
         title: 'MLSysBook & TinyTorch',
-        indexPhrase: 'Open-source ML systems & engine',
-        hook: 'From-scratch deep learning framework and 11,000+ star open-source curriculum teaching how AI systems work under the hood.',
+        indexPhrase: 'Open-source ML systems & TinyTorch',
+        hook: 'From-scratch PyTorch educational framework (TinyTorch) and 11,000+ star open-source ML systems book (MLSysBook).',
         role: 'AI & ML Systems Lead Designer · Harvard',
         period: 'Jan 2023 – 2025',
         summary: 'Co-created MLSysBook (11,000+ GitHub stars), built TinyTorch (PyTorch implemented from scratch for thousands of learners), and embedded browser-native generative AI learning agents.',
         metrics: [
           { label: 'MLSysBook', value: '11,000+ GitHub Stars' },
           { label: 'TinyTorch', value: '1,000s of Users' },
-          { label: 'Runtime', value: 'In-Browser Agents' }
+          { label: 'Runtime', value: 'In-Browser AI Agents' }
         ],
         nodes: [
-          { id: '01', name: 'TinyTorch Tensor Differential', detail: 'Implements raw multi-dimensional tensor operations and memory strides from scratch.', pos: [-2.1, 0, 0.5] },
-          { id: '02', name: 'MLSysBook (11k+ Stars) Core', detail: 'Structures systems-level machine learning engineering into interactive chapters.', pos: [0, 0.4, 0] },
-          { id: '03', name: 'Browser Learning AI Agent', detail: 'Runs Socratic code-review and debugging agents directly inside the student browser.', pos: [0, 1.6, 0] },
-          { id: '04', name: 'Autograd Backprop Shaft', detail: 'Traces computational graphs and propagates gradients backward through custom ops.', pos: [1.9, -0.3, -0.5] },
-          { id: '05', name: 'Open-Source Education Portal', detail: 'Delivers accessible non-profit AI engineering education to thousands of developers.', pos: [0, -1.4, 0.7] }
+          { id: '01', name: 'TinyTorch (PyTorch From Scratch)', detail: 'Implements multi-dimensional tensor operations and neural layers from scratch for learners.', pos: [-2.1, 0, 0.5] },
+          { id: '02', name: 'MLSysBook (11,000+ GitHub Stars)', detail: 'Structures systems-level machine learning engineering into open-source interactive chapters.', pos: [0, 0.4, 0] },
+          { id: '03', name: 'In-Browser Generative AI Agents', detail: 'Runs Socratic code-review and learning agents directly inside the student browser.', pos: [0, 1.6, 0] },
+          { id: '04', name: 'Autograd & Backpropagation', detail: 'Traces computational graphs and propagates gradients backward through custom operations.', pos: [1.9, -0.3, -0.5] },
+          { id: '05', name: 'Open-Source AI Education Platform', detail: 'Delivers accessible non-profit AI systems education to thousands of learners worldwide.', pos: [0, -1.4, 0.7] }
         ]
       },
       {
@@ -638,7 +677,7 @@
         num: '05',
         title: 'Socratio',
         indexPhrase: 'Custom AI for websites',
-        hook: 'Co-founded startup deploying custom generative AI agents to any website, backed by Google Gemini and Qualcomm collaborations.',
+        hook: 'Co-founded startup deploying custom generative AI to any website, with Google Gemini and Qualcomm collaborations.',
         role: 'Co-Founder · AI Specialist Full Stack',
         period: 'Mar 2023 – 2025',
         summary: 'Co-founded Socratio to deploy custom generative AI to any website. Collaborated with the Google Gemini team on adaptive textbooks at Harvard with TinyML integration and partnered with Qualcomm on global learning.',
@@ -648,19 +687,19 @@
           { label: 'Global Partner', value: 'Qualcomm Initiative' }
         ],
         nodes: [
-          { id: '01', name: 'Google Gemini Adaptive Core', detail: 'Powers dynamic Socratic dialogue tailored to each reader’s comprehension level.', pos: [0, 1.2, 0] },
-          { id: '02', name: 'Universal Website Injector', detail: 'Embeds custom-trained AI assistants into any third-party DOM with a single script.', pos: [-1.8, -0.8, 1.2] },
-          { id: '03', name: 'Harvard Adaptive Textbook', detail: 'Transforms static academic chapters into interactive, personalized simulations.', pos: [2.1, -0.4, 0.5] },
-          { id: '04', name: 'TinyML Sensor Bridge', detail: 'Streams live microcontroller hardware telemetry directly into browser learning labs.', pos: [-1.8, 0.5, -1.2] },
-          { id: '05', name: 'Qualcomm Global Learning Hub', detail: 'Scales edge-AI curriculum across international developer communities.', pos: [0.8, -1.1, -1.5] }
+          { id: '01', name: 'Custom Website Generative AI', detail: 'Embeds custom-trained generative AI assistants into any website with a single integration.', pos: [0, 1.2, 0] },
+          { id: '02', name: 'Google Gemini Collaboration', detail: 'Powers dynamic Socratic dialogue tailored to each reader’s comprehension level.', pos: [-1.8, -0.8, 1.2] },
+          { id: '03', name: 'Harvard Adaptive Textbooks', detail: 'Transforms static academic chapters into interactive, personalized learning experiences.', pos: [2.1, -0.4, 0.5] },
+          { id: '04', name: 'TinyML Hardware Integration', detail: 'Connects live microcontroller sensor workflows directly into interactive learning labs.', pos: [-1.8, 0.5, -1.2] },
+          { id: '05', name: 'Qualcomm Global Learning Partnership', detail: 'Scales edge-AI curriculum across international developer and student communities.', pos: [0.8, -1.1, -1.5] }
         ]
       },
       {
         id: 'freelance-ai',
         num: '06',
-        title: 'Stability AI · AWS 5x · Big Lift',
-        indexPhrase: 'High-speed LLM & QA inference',
-        hook: 'High-throughput inference tuning that boosted Stability AI prompt accuracy by 80% and accelerated AWS QA pipelines 5x.',
+        title: 'Stability AI · AWS · Big Lift AI',
+        indexPhrase: 'LLM fine-tuning & 5x QA inference',
+        hook: 'Fine-tuned GPT models for Stability AI (+80% accuracy), built 5x faster AWS QA inference, and cut Big Lift AI latency by 50%.',
         role: 'AI Specialist · Principal Consultant',
         period: 'Jan 2019 – 2024',
         summary: 'Fine-tuned GPT models for Stability AI (+80% accuracy), engineered custom AWS HuggingFace QA inference (5x speedup), built Big Lift AI (-50% latency, 2x accuracy), and created custom LLM eval suites (+20% scores).',
@@ -670,55 +709,55 @@
           { label: 'Big Lift AI', value: '-50% Latency / 2x Acc' }
         ],
         nodes: [
-          { id: '01', name: 'Stability AI GPT Tuner (+80%)', detail: 'Fine-tuned GPT prompt expansion models to improve image generation fidelity by 80%.', pos: [-2.4, 0, 0] },
-          { id: '02', name: 'AWS HuggingFace 5x Turbine', detail: 'Optimized custom AWS GPU inference containers for a 5x leap in QA throughput.', pos: [-0.4, 0.2, 0] },
-          { id: '03', name: 'Big Lift Bypass (-50% Latency)', detail: 'Cut end-to-end production response latency in half while doubling answer accuracy.', pos: [0.3, -1.2, 0.6] },
-          { id: '04', name: 'Custom LLM Evals (+20%)', detail: 'Built deterministic evaluation harnesses from scratch, lifting benchmark scores 20%.', pos: [1.6, 1.3, 0] },
-          { id: '05', name: 'LangChain / LlamaIndex Stack', detail: 'Delivered full-stack Next.js retrieval applications into production.', pos: [2.5, 0, 0] }
+          { id: '01', name: 'Stability AI GPT Fine-Tuning (+80%)', detail: 'Fine-tuned GPT prompt models for Stability AI to improve accuracy by 80%.', pos: [-2.4, 0, 0] },
+          { id: '02', name: 'AWS HuggingFace QA Inference (5x)', detail: 'Engineered custom AWS GPU inference pipelines for a 5x speedup in question answering.', pos: [-0.4, 0.2, 0] },
+          { id: '03', name: 'Big Lift AI (-50% Latency, 2x Acc)', detail: 'Cut end-to-end production response latency in half while doubling answer accuracy.', pos: [0.3, -1.2, 0.6] },
+          { id: '04', name: 'Custom LLM Evaluations (+20%)', detail: 'Built custom evaluation suites from scratch, lifting benchmark scores by 20%.', pos: [1.6, 1.3, 0] },
+          { id: '05', name: 'LangChain, LlamaIndex & Next.js', detail: 'Delivered full-stack retrieval and generative AI web applications into production.', pos: [2.5, 0, 0] }
         ]
       },
       {
         id: 'studyduck',
         num: '07',
-        title: 'StudyDuck Document Engine',
-        indexPhrase: '3x faster PDF neural synthesis',
-        hook: 'Azure deep-learning pipeline that cleans noisy PDF documents and distills structured summaries in seconds at 3x speed.',
+        title: 'StudyDuck LLC',
+        indexPhrase: 'Azure AI & 3x PDF summarization',
+        hook: 'Azure AI pipeline and custom deep-learning summarization model achieving 3x faster and more accurate PDF summaries.',
         role: 'Lead Software Engineer · AI',
         period: 'Jan 2019 – Dec 2022',
         summary: 'Led engineering at StudyDuck LLC, building an Azure AI pipeline to parse and clean complex PDF text and training a custom deep learning summarization model that achieved a 3x increase in speed and accuracy.',
         metrics: [
           { label: 'Model Gain', value: '3x Speed & Accuracy' },
           { label: 'Cloud Stack', value: 'Microsoft Azure AI' },
-          { label: 'Turnaround', value: 'Sub-Second Summary' }
+          { label: 'Turnaround', value: 'Summaries in Seconds' }
         ],
         nodes: [
-          { id: '01', name: 'PDF Ingestion Calender Rollers', detail: 'Extracts raw layout blocks, tables, and multi-column text from arbitrary PDFs.', pos: [-1.8, 1.3, 0] },
-          { id: '02', name: 'Azure Text Cleaning Sieve', detail: 'Strips OCR artifacts, headers, and boilerplate noise before tokenization.', pos: [-1.4, 0.2, 0.5] },
-          { id: '03', name: '3x Deep Learning Screw Auger', detail: 'Compresses long-form academic documents with 3x higher speed and factual recall.', pos: [0.2, -0.7, 0] },
-          { id: '04', name: 'Semantic Keypoint Condenser', detail: 'Clusters core arguments into structured study flashcards and executive briefs.', pos: [1.8, 0.4, -0.5] },
-          { id: '05', name: 'Instant Summary Ejector', detail: 'Streams formatted summaries back to the user interface within seconds.', pos: [2.6, -0.7, 0.4] }
+          { id: '01', name: 'PDF Parsing & Text Extraction', detail: 'Extracts structured text blocks, tables, and multi-column layouts from complex PDFs.', pos: [-1.8, 1.3, 0] },
+          { id: '02', name: 'Azure AI Text Cleaning Pipeline', detail: 'Cleans OCR artifacts, headers, and formatting noise before model ingestion.', pos: [-1.4, 0.2, 0.5] },
+          { id: '03', name: 'Deep Learning Summarizer (3x Gain)', detail: 'Custom-trained neural summarization model achieving 3x higher speed and accuracy.', pos: [0.2, -0.7, 0] },
+          { id: '04', name: 'Keypoint & Study Note Generation', detail: 'Distills long-form academic documents into structured study notes and key takeaways.', pos: [1.8, 0.4, -0.5] },
+          { id: '05', name: 'Real-Time Summary Delivery', detail: 'Delivers clean, readable document summaries to users within seconds.', pos: [2.6, -0.7, 0.4] }
         ]
       },
       {
         id: 'upenn-neuro-algo',
         num: '08',
         title: 'UPenn & Harvard Research',
-        indexPhrase: 'EEG emotion AI & algorithms',
-        hook: 'Neuro-AI signal research predicting emotion and ADHD markers from EEG waves alongside graduate algorithms instruction for 2,000+ students.',
+        indexPhrase: 'EEG emotion AI & UPenn teaching',
+        hook: 'Published research on ADHD/EEG signal analysis, AI emotion prediction, and TensorFlow systems, plus teaching 2,000+ UPenn grad students.',
         role: 'Researcher & Graduate Teaching Assistant',
         period: '2020 – 2025',
         summary: 'Published research on ADHD & EEG data (2024), emotion prediction with AI (2024), TensorFlow Systems Engineering (2024), and Generative Learning (2025), plus award-winning teaching of Algorithms & Discrete Math to 2,000+ UPenn grad students.',
         metrics: [
           { label: 'UPenn Reach', value: '2,000+ Grad Students' },
           { label: 'Award', value: 'Excellence in Teaching' },
-          { label: 'Neuro-AI', value: 'EEG & Emotion Models' }
+          { label: 'Publications', value: 'EEG / Emotion / ML Systems' }
         ],
         nodes: [
-          { id: '01', name: 'ADHD & EEG Wave Oscillators', detail: 'Models multi-channel electroencephalography frequency bands to detect attentional signatures.', pos: [-1.8, 0.8, 0.4] },
-          { id: '02', name: 'AI Emotion Prediction Camshaft', detail: 'Maps non-linear physiological phase shifts into affective state classifications.', pos: [-1.8, -0.9, 0] },
-          { id: '03', name: 'UPenn Algorithms Lattice (2k+ Students)', detail: 'Designed graduate discrete math and graph theory curriculum at the University of Pennsylvania.', pos: [1.6, 0.3, 0] },
-          { id: '04', name: 'TensorFlow Systems Profiler', detail: 'Analyzes hardware-level compute bottlenecks in distributed neural training.', pos: [1.6, -1.1, 0.7] },
-          { id: '05', name: 'Generative Learning Pedagogy', detail: 'Investigates how human cognition co-evolves with interactive AI reasoning tools.', pos: [0, 1.4, -0.6] }
+          { id: '01', name: 'ADHD & EEG Signal Research (2024)', detail: 'Published research analyzing multi-channel EEG signals to identify attentional markers.', pos: [-1.8, 0.8, 0.4] },
+          { id: '02', name: 'Emotion Prediction with AI (2024)', detail: 'Published machine learning models predicting emotional states from physiological data.', pos: [-1.8, -0.9, 0] },
+          { id: '03', name: 'UPenn Algorithms & Discrete Math (2k+)', detail: 'Taught graduate Algorithms and Discrete Math to 2,000+ UPenn students (Excellence in Teaching Award).', pos: [1.6, 0.3, 0] },
+          { id: '04', name: 'TensorFlow Systems Engineering (2024)', detail: 'Authored technical work on distributed neural network systems and compute performance.', pos: [1.6, -1.1, 0.7] },
+          { id: '05', name: 'Generative Learning Research (2025)', detail: 'Investigates how learners interact and co-evolve with generative AI educational tools.', pos: [0, 1.4, -0.6] }
         ]
       }
     ];
@@ -1516,72 +1555,72 @@
       const arch = item.archetype || MACHINE_ARCHETYPES[index % MACHINE_ARCHETYPES.length];
       const count = (item.nodes || []).length;
 
-      // 3 Architectural Topologies tailored to machine families
+      // 3 Architectural Topologies tailored to machine families (without overwriting or renaming resume items)
       if (arch === 'gyroscope' || arch === 'orrery') {
         return {
-          topologyName: `${count} SUBSYSTEMS · STAR MESH BUS`,
-          roleBadges: ['ORCHESTRATOR', 'FIELD NODE', 'RELAY BUS', 'SYNC GATE', 'KNOWLEDGE HUB'],
+          topologyName: `${count} ITEMS · HUB & SPOKE DIAGRAM`,
+          roleBadges: ['01', '02', '03', '04', '05'],
           normCoords: [
-            [0.0, 0.0],       // 01: Center Core Hub
-            [-0.86, -0.76],   // 02: Top-Left Node
-            [0.86, -0.76],    // 03: Top-Right Node
-            [-0.86, 0.76],    // 04: Bottom-Left Node
-            [0.86, 0.76]      // 05: Bottom-Right Node
+            [0.0, 0.0],       // 01: Center Core
+            [-0.86, -0.76],   // 02: Top-Left
+            [0.86, -0.76],    // 03: Top-Right
+            [-0.86, 0.76],    // 04: Bottom-Left
+            [0.86, 0.76]      // 05: Bottom-Right
           ],
           connections: [
-            { from: 0, to: 1, label: 'DISPATCH', primary: true },
-            { from: 0, to: 2, label: 'RELAY', primary: true },
-            { from: 0, to: 3, label: 'SYNC GATE', primary: true },
-            { from: 0, to: 4, label: 'GRAPH BUS', primary: true },
-            { from: 1, to: 3, label: 'TELEMETRY', primary: false },
-            { from: 2, to: 4, label: 'STATE FEED', primary: false },
-            { from: 3, to: 4, label: 'CONVERGE', primary: false }
+            { from: 0, to: 1, label: '01 → 02', primary: true },
+            { from: 0, to: 2, label: '01 → 03', primary: true },
+            { from: 0, to: 3, label: '01 → 04', primary: true },
+            { from: 0, to: 4, label: '01 → 05', primary: true },
+            { from: 1, to: 3, label: '02 → 04', primary: false },
+            { from: 2, to: 4, label: '03 → 05', primary: false },
+            { from: 3, to: 4, label: '04 → 05', primary: false }
           ].filter(c => c.from < count && c.to < count)
         };
       }
 
       if (arch === 'conveyor' || arch === 'turbine' || arch === 'refinery') {
         return {
-          topologyName: `${count} SUBSYSTEMS · MULTI-STAGE PIPELINE`,
-          roleBadges: ['STAGE 01 · INGEST', 'STAGE 02 · CORE', 'STAGE 03 · VALIDATE', 'STAGE 04 · RUNTIME', 'STAGE 05 · DEPLOY'],
+          topologyName: `${count} ITEMS · SEQUENTIAL PIPELINE`,
+          roleBadges: ['01', '02', '03', '04', '05'],
           normCoords: [
-            [-0.90, -0.68],   // 01: Top-Left Intake
-            [0.0, -0.68],     // 02: Top-Center Mill / Turbine
-            [0.90, -0.68],    // 03: Top-Right Scoring / Bypass
-            [-0.46, 0.74],    // 04: Bottom-Left Runtime / Condenser
-            [0.54, 0.74]      // 05: Bottom-Right Deployment Output
+            [-0.90, -0.68],   // 01: Top-Left
+            [0.0, -0.68],     // 02: Top-Center
+            [0.90, -0.68],    // 03: Top-Right
+            [-0.46, 0.74],    // 04: Bottom-Left
+            [0.54, 0.74]      // 05: Bottom-Right
           ],
           connections: [
-            { from: 0, to: 1, label: 'STREAM', primary: true },
-            { from: 1, to: 2, label: 'PROCESS', primary: true },
-            { from: 2, to: 3, label: 'COMPILE', primary: true },
-            { from: 3, to: 4, label: 'DELIVER', primary: true },
-            { from: 1, to: 3, label: 'DIRECT BUS', primary: false },
-            { from: 2, to: 4, label: 'FAST PATH', primary: false },
-            { from: 4, to: 0, label: 'FEEDBACK', primary: false }
+            { from: 0, to: 1, label: '01 → 02', primary: true },
+            { from: 1, to: 2, label: '02 → 03', primary: true },
+            { from: 2, to: 3, label: '03 → 04', primary: true },
+            { from: 3, to: 4, label: '04 → 05', primary: true },
+            { from: 1, to: 3, label: '02 → 04', primary: false },
+            { from: 2, to: 4, label: '03 → 05', primary: false },
+            { from: 4, to: 0, label: '05 → 01', primary: false }
           ].filter(c => c.from < count && c.to < count)
         };
       }
 
       // Default: Layered System Graph ('loom', 'differential', 'harmonic')
       return {
-        topologyName: `${count} SUBSYSTEMS · LAYERED ARCHITECTURE`,
-        roleBadges: ['FOUNDATION', 'CORE ENGINE', 'AGENT LAYER', 'SYSTEM BUS', 'OUTPUT PORTAL'],
+        topologyName: `${count} ITEMS · SYSTEM ARCHITECTURE`,
+        roleBadges: ['01', '02', '03', '04', '05'],
         normCoords: [
-          [-0.90, 0.0],     // 01: Left Foundation / Intake
-          [0.0, -0.74],     // 02: Center-Top Core
-          [0.0, 0.74],      // 03: Center-Bottom Core
-          [0.90, -0.74],    // 04: Right-Top Bus / Shaft
-          [0.90, 0.74]      // 05: Right-Bottom Output Portal
+          [-0.90, 0.0],     // 01: Left
+          [0.0, -0.74],     // 02: Center-Top
+          [0.0, 0.74],      // 03: Center-Bottom
+          [0.90, -0.74],    // 04: Right-Top
+          [0.90, 0.74]      // 05: Right-Bottom
         ],
         connections: [
-          { from: 0, to: 1, label: 'FORWARD', primary: true },
-          { from: 0, to: 2, label: 'STATE', primary: true },
-          { from: 1, to: 3, label: 'PROPAGATE', primary: true },
-          { from: 2, to: 4, label: 'SYNTHESIZE', primary: true },
-          { from: 3, to: 4, label: 'EMIT', primary: true },
-          { from: 1, to: 2, label: 'COUPLE', primary: false },
-          { from: 3, to: 1, label: 'GRADIENT', primary: false }
+          { from: 0, to: 1, label: '01 → 02', primary: true },
+          { from: 0, to: 2, label: '01 → 03', primary: true },
+          { from: 1, to: 3, label: '02 → 04', primary: true },
+          { from: 2, to: 4, label: '03 → 05', primary: true },
+          { from: 3, to: 4, label: '04 → 05', primary: true },
+          { from: 1, to: 2, label: '02 ↔ 03', primary: false },
+          { from: 3, to: 1, label: '04 → 02', primary: false }
         ].filter(c => c.from < count && c.to < count)
       };
     }
@@ -1695,11 +1734,168 @@
 
     /**
      * ============================================================================
+     * MINIATURE LIVE 3D COMPONENT PREVIEW (FOR DIAGRAM MODE CARDS)
+     * ============================================================================
+     */
+    const miniScene = new THREE.Scene();
+    const miniCamera = new THREE.PerspectiveCamera(34, 1, 0.1, 30);
+    miniCamera.position.set(2.3, 1.75, 2.65);
+    miniCamera.lookAt(0, 0, 0);
+
+    const miniRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    miniRenderer.setSize(104, 104);
+    miniRenderer.setPixelRatio(1);
+
+    const miniAmbient = new THREE.AmbientLight(0xffffff, 0.82);
+    miniScene.add(miniAmbient);
+    const miniDirLight = new THREE.DirectionalLight(0xffffff, 0.72);
+    miniDirLight.position.set(4, 7, 5);
+    miniScene.add(miniDirLight);
+
+    const miniRootGroup = new THREE.Group();
+    miniScene.add(miniRootGroup);
+
+    function createMiniNodeMaterials() {
+      const dark = isDarkPolarity;
+      return {
+        body: new THREE.MeshStandardMaterial({
+          color: dark ? 0x222220 : 0xe5e3dc,
+          roughness: 0.65,
+          metalness: 0.16,
+          wireframe: isWireframe,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        }),
+        dark: new THREE.MeshStandardMaterial({
+          color: dark ? 0x333330 : 0xc6c4bc,
+          roughness: 0.55,
+          metalness: 0.24,
+          wireframe: isWireframe,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        }),
+        wire: new THREE.LineBasicMaterial({
+          color: dark ? 0xd8d7d2 : 0x181818,
+          transparent: true,
+          opacity: isWireframe ? 0.92 : 0.62
+        })
+      };
+    }
+
+    function addMiniSolid(geo, mat, wireMat, parent) {
+      const m = new THREE.Mesh(geo, mat);
+      const edges = new THREE.EdgesGeometry(geo, 18);
+      m.add(new THREE.LineSegments(edges, wireMat));
+      parent.add(m);
+      return m;
+    }
+
+    function buildMiniSpurGear(radius, thickness, teeth, mats) {
+      const g = new THREE.Group();
+      addMiniSolid(new THREE.CylinderGeometry(radius, radius, thickness, 20), mats.body, mats.wire, g);
+      addMiniSolid(new THREE.CylinderGeometry(radius * 0.4, radius * 0.4, thickness * 1.3, 12), mats.dark, mats.wire, g);
+      const toothGeo = new THREE.BoxGeometry(radius * 0.24, thickness * 0.9, radius * 0.28);
+      for (let i = 0; i < teeth; i++) {
+        const a = (i / teeth) * Math.PI * 2;
+        const t = addMiniSolid(toothGeo, mats.body, mats.wire, g);
+        t.position.set(Math.cos(a) * (radius * 1.07), 0, Math.sin(a) * (radius * 1.07));
+        t.rotation.y = -a;
+      }
+      return g;
+    }
+
+    function createMini3DPartForNode(nodeIdx) {
+      const mats = createMiniNodeMaterials();
+      const group = new THREE.Group();
+      let animateFn = null;
+      const variant = nodeIdx % 5;
+
+      if (variant === 0) {
+        // Tri-axial Gyroscope Core
+        const r1 = addMiniSolid(new THREE.TorusGeometry(0.95, 0.065, 10, 28), mats.body, mats.wire, group);
+        const r2 = addMiniSolid(new THREE.TorusGeometry(0.68, 0.06, 10, 24), mats.dark, mats.wire, group);
+        const core = addMiniSolid(new THREE.OctahedronGeometry(0.36, 0), mats.body, mats.wire, group);
+        animateFn = (t) => {
+          r1.rotation.y = t * 1.3;
+          r1.rotation.x = t * 0.5;
+          r2.rotation.x = -t * 1.7;
+          r2.rotation.z = t * 1.1;
+          core.rotation.y = -t * 2.4;
+        };
+      } else if (variant === 1) {
+        // Interlocking Spur Gear Pair
+        const g1 = buildMiniSpurGear(0.62, 0.24, 12, mats);
+        g1.rotation.x = Math.PI / 2;
+        g1.position.set(-0.38, -0.18, 0);
+        group.add(g1);
+        const g2 = buildMiniSpurGear(0.42, 0.24, 8, mats);
+        g2.rotation.x = Math.PI / 2;
+        g2.position.set(0.48, 0.36, 0);
+        group.add(g2);
+        animateFn = (t) => {
+          g1.rotation.z = t * 1.6;
+          g2.rotation.z = -t * 2.4;
+        };
+      } else if (variant === 2) {
+        // Reciprocating Twin Pistons + Crank Gear
+        const crank = buildMiniSpurGear(0.44, 0.2, 10, mats);
+        crank.rotation.x = Math.PI / 2;
+        crank.position.set(0, -0.42, 0);
+        group.add(crank);
+        const pL = addMiniSolid(new THREE.CylinderGeometry(0.24, 0.24, 0.58, 12), mats.body, mats.wire, group);
+        const pR = addMiniSolid(new THREE.CylinderGeometry(0.24, 0.24, 0.58, 12), mats.dark, mats.wire, group);
+        animateFn = (t) => {
+          crank.rotation.z = t * 2.4;
+          pL.position.set(-0.34, 0.25 + Math.sin(t * 3.2) * 0.26, 0);
+          pR.position.set(0.34, 0.25 + Math.sin(t * 3.2 + Math.PI) * 0.26, 0);
+        };
+      } else if (variant === 3) {
+        // Counter-Rotating Axial Turbine
+        const s1 = buildMiniSpurGear(0.76, 0.18, 14, mats);
+        s1.rotation.z = Math.PI / 2;
+        s1.position.x = -0.28;
+        group.add(s1);
+        const s2 = buildMiniSpurGear(0.62, 0.18, 12, mats);
+        s2.rotation.z = Math.PI / 2;
+        s2.position.x = 0.28;
+        group.add(s2);
+        const shaft = addMiniSolid(new THREE.CylinderGeometry(0.11, 0.11, 1.5, 10), mats.dark, mats.wire, group);
+        shaft.rotation.z = Math.PI / 2;
+        animateFn = (t) => {
+          s1.rotation.x = t * 2.6;
+          s2.rotation.x = -t * 3.1;
+          group.rotation.y = Math.sin(t * 0.6) * 0.35;
+        };
+      } else {
+        // Harmonic Wave Cam & Differential Cage
+        const cage = addMiniSolid(new THREE.BoxGeometry(1.18, 0.78, 0.78), mats.dark, mats.wire, group);
+        const inner = buildMiniSpurGear(0.5, 0.22, 10, mats);
+        group.add(inner);
+        animateFn = (t) => {
+          cage.rotation.y = t * 0.95;
+          cage.rotation.x = Math.sin(t * 1.4) * 0.35;
+          inner.rotation.z = -t * 2.6;
+          inner.rotation.x = t * 1.5;
+        };
+      }
+
+      group.visible = false;
+      miniRootGroup.add(group);
+      return { group, animateFn };
+    }
+
+    /**
+     * ============================================================================
      * BUILD MACHINE + VIEWPORT-SAFE CALLOUT TAGS / DIAGRAM CARDS
      * ============================================================================
      */
     function buildThreeMachineForEndeavor(index) {
       clearCurrentMachine();
+      while (miniRootGroup.children.length > 0) {
+        miniRootGroup.remove(miniRootGroup.children[0]);
+      }
       const item = ENDEAVORS[index];
       const builders = [
         buildQuantumSkyMachine,
@@ -1742,7 +1938,6 @@
             return `${dir}0${peerIdx + 1}`;
           });
 
-        const roleBadge = diagramSpec.roleBadges[idx % diagramSpec.roleBadges.length] || `PART 0${idx + 1}`;
         const normCoord = diagramSpec.normCoords[idx % diagramSpec.normCoords.length] || [0, 0];
 
         const tag = document.createElement('div');
@@ -1753,19 +1948,27 @@
               <span class="tag-step">${n.id}</span>
               <span class="tag-title truncate">${n.name}</span>
             </div>
-            <span class="diagram-port-badge">${roleBadge}</span>
           </div>
           <div class="diagram-node-body">
-            <p class="diagram-node-detail">${n.detail || item.hook || ''}</p>
+            <div class="diagram-node-content-row">
+              <canvas class="diagram-mini-canvas" width="104" height="104"></canvas>
+              <p class="diagram-node-detail">${n.detail || item.hook || ''}</p>
+            </div>
             <div class="diagram-node-footer">
-              <span>SYS_${n.id}</span>
+              <span class="truncate max-w-[120px]">${item.title}</span>
               <span>${linkedPeers.slice(0, 3).join(' ')}</span>
             </div>
           </div>
         `;
 
+        const miniCanvasEl = tag.querySelector('.diagram-mini-canvas');
+        const miniPart = createMini3DPartForNode(idx);
+
         const tagObj = {
           el: tag,
+          miniCanvasEl,
+          miniCtx: miniCanvasEl ? miniCanvasEl.getContext('2d') : null,
+          miniPart,
           pos3D: new THREE.Vector3(...(n.pos || [0, 0, 0])),
           normDiag: normCoord,
           dragOffset: { x: 0, y: 0 },
@@ -2296,6 +2499,18 @@
             tagObj.el.style.left = `${sx}px`;
             tagObj.el.style.top = `${sy}px`;
           }
+
+          // Render live miniature moving 3D Three.js component inside the diagram card
+          if (diagramTransition > 0.05 && tagObj.miniPart && tagObj.miniCtx) {
+            if (tagObj.miniPart.animateFn) {
+              tagObj.miniPart.animateFn(elapsedTime * speedMult);
+            }
+            tagObj.miniPart.group.visible = true;
+            miniRenderer.render(miniScene, miniCamera);
+            tagObj.miniCtx.clearRect(0, 0, 104, 104);
+            tagObj.miniCtx.drawImage(miniRenderer.domElement, 0, 0, 104, 104);
+            tagObj.miniPart.group.visible = false;
+          }
         });
 
         // Update SVG schematic connection lines and flowing signal packets
@@ -2464,21 +2679,43 @@
       });
     }
 
-    // Extract text from uploaded PDF using PDF.js
+    // Extract text from uploaded PDF using PDF.js while preserving line & paragraph breaks
     async function extractTextFromPDF(file) {
       if (!window.pdfjsLib) {
         throw new Error('PDF.js library not available');
       }
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let fullText = '';
+      const pageTexts = [];
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
-        const strings = content.items.map(item => item.str);
-        fullText += strings.join(' ') + '\n\n';
+        let pageOut = '';
+        let lastY = null;
+        for (const item of content.items) {
+          const str = item.str || '';
+          const y = Array.isArray(item.transform) ? item.transform[5] : null;
+          if (lastY !== null && y !== null) {
+            const dy = Math.abs(y - lastY);
+            if (dy > 13) {
+              pageOut += '\n\n';
+            } else if (dy > 2.8) {
+              pageOut += '\n';
+            } else if (pageOut && !pageOut.endsWith(' ') && !pageOut.endsWith('\n') && str && !str.startsWith(' ')) {
+              pageOut += ' ';
+            }
+          }
+          pageOut += str;
+          if (item.hasEOL) {
+            pageOut += '\n';
+            lastY = null;
+          } else if (y !== null && str.trim()) {
+            lastY = y;
+          }
+        }
+        pageTexts.push(pageOut.trim());
       }
-      return fullText.trim();
+      return pageTexts.join('\n\n').trim();
     }
 
     if (resumeFileInputEl) {
@@ -2515,65 +2752,164 @@
       [2.1, -0.8, 0.5]
     ];
 
+    // Helper: extract a clean, verbatim item label from a resume phrase without inventing machine jargon
+    function extractAuthenticItemName(phrase) {
+      const clean = String(phrase || '').replace(/^[-•*▪▸]\s*/, '').trim();
+      if (!clean) return '';
+
+      // 1. If the bullet starts with an explicit "Topic: description" or "Topic — description", preserve that exact topic name
+      const colonMatch = clean.match(/^([^:–—]{3,44})\s*[:–—]\s+.+/);
+      if (colonMatch) {
+        return colonMatch[1].trim();
+      }
+
+      // 2. If the phrase is already concise (<= 44 chars), keep it verbatim
+      if (clean.length <= 44) {
+        return clean.replace(/[.;,]+$/, '').trim();
+      }
+
+      // 3. Strip only a leading action verb (e.g., "Architected", "Built", "Designed") so the actual system/item name leads verbatim
+      const withoutLeadVerb = clean.replace(
+        /^(?:architected|built|designed|developed|engineered|created|implemented|deployed|led|trained|launched|authored|published|co-created|co-founded|optimized|reduced|increased|integrated|spearheaded|managed|delivered|established|wrote|taught)\s+(?:and\s+\w+\s+)?(?:a\s+|an\s+|the\s+)?/i,
+        ''
+      ).trim();
+
+      const source = withoutLeadVerb.length >= 6 ? withoutLeadVerb : clean;
+
+      // Stop cleanly before secondary clause connectors if possible while keeping the exact words from the resume
+      const clauseCut = source.split(/\s+(?:using|with|by|to\s+achieve|resulting\s+in|achieving|yielding|across|for\s+a|that|which)\s+/i)[0].trim();
+      const targetStr = (clauseCut.length >= 8 && clauseCut.length <= 48) ? clauseCut : source;
+
+      if (targetStr.length <= 48) {
+        return targetStr.replace(/[.;,]+$/, '').trim();
+      }
+      const words = targetStr.split(/\s+/);
+      let acc = '';
+      for (const w of words) {
+        if ((acc + ' ' + w).trim().length > 46) break;
+        acc = (acc + ' ' + w).trim();
+      }
+      return (acc || targetStr.slice(0, 46)).replace(/[.;,]+$/, '').trim();
+    }
+
     function compileResumeDeterministic(rawText) {
       const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
       const firstLine = lines[0] || 'Custom Resume';
-      const firstLineParts = firstLine.split(/[|—\-–]/).map(s => s.trim()).filter(Boolean);
-      const candidateName = (firstLineParts[0] || 'Custom Engineer').slice(0, 32);
-      const candidateMeta = (firstLineParts[1] || lines[1] || 'Principal Engineer').slice(0, 28);
+      const firstLineParts = firstLine.split(/\s*[|—–]\s*|\s+-\s+/).map(s => s.trim()).filter(Boolean);
+      const candidateName = (firstLineParts[0] || 'Custom Resume').slice(0, 42);
+      const candidateMeta = (firstLineParts[1] || lines[1] || '').slice(0, 42);
 
-      const chunks = rawText
+      // Ignore standalone section heading lines like "EXPERIENCE" or "PROJECTS" when grouping
+      const sectionHeadingRe = /^(?:work\s+experience|experience|employment|projects|selected\s+projects|education|publications|research|leadership|skills|summary|profile)$/i;
+
+      const rawChunks = rawText
         .split(/\n\s*\n+/)
-        .map(c => c.trim())
-        .filter(c => c.length > 25);
+        .map(c => c
+          .split(/\r?\n/)
+          .map(l => l.trim())
+          .filter(l => l && !sectionHeadingRe.test(l))
+          .join('\n')
+          .trim()
+        )
+        .filter(c => c.length > 20);
 
-      const blocks = chunks.length >= 2 ? chunks.slice(0, 8) : lines.reduce((acc, line, idx) => {
+      // Skip the first chunk if it is just the 1-2 line candidate contact header
+      const contentChunks = (rawChunks.length > 1 && rawChunks[0].split(/\r?\n/).length <= 2 && rawChunks[0].includes(candidateName))
+        ? rawChunks.slice(1)
+        : rawChunks;
+
+      const filteredLines = lines.slice(1).filter(l => !sectionHeadingRe.test(l));
+      const blocks = contentChunks.length >= 1 ? contentChunks.slice(0, 8) : filteredLines.reduce((acc, line, idx) => {
         const groupIdx = Math.floor(idx / 4);
         acc[groupIdx] = (acc[groupIdx] ? acc[groupIdx] + '\n' : '') + line;
         return acc;
       }, []).slice(0, 8);
 
+      const dateRangeRe = /\b((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}\s*[-–—]\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}|\d{4}|Present|Current)|\d{4}\s*[-–—]\s*(?:\d{4}|Present|Current)|\b20\d\d\b)/i;
+      const roleKeywordRe = /\b(?:engineer|developer|architect|researcher|scientist|founder|co-founder|lead|director|manager|vp|president|professor|instructor|assistant|consultant|specialist|designer|intern|fellow|analyst|officer|head)\b/i;
+
       const compiled = blocks.map((block, idx) => {
-        const bLines = block.split(/\r?\n/).map(s => s.replace(/^[-•*]\s*/, '').trim()).filter(Boolean);
-        const header = bLines[0] || `Endeavor ${idx + 1}`;
-        const parts = header.split(/[|—–]/).map(s => s.trim()).filter(Boolean);
+        const bLines = block.split(/\r?\n/).map(s => s.replace(/^[-•*▪▸]\s*/, '').trim()).filter(Boolean);
+        const header = bLines[0] || `Item ${idx + 1}`;
 
-        const dateMatch = block.match(/\b(20\d\d\s*[-–]\s*(?:20\d\d|Present|Current)|20\d\d)\b/i);
-        const period = dateMatch ? dateMatch[0] : (parts[0] && /\d/.test(parts[0]) ? parts[0] : 'Active');
-        const title = (parts.length > 1 ? parts[1] : parts[0]).slice(0, 44);
-        const role = (parts.length > 2 ? parts[2] : (bLines[1] || 'Lead Architect')).slice(0, 44);
-        const indexPhrase = role.split(/\s+/).slice(0, 4).join(' ');
+        const dateMatch = header.match(dateRangeRe) || block.match(dateRangeRe);
+        const period = dateMatch ? dateMatch[0].trim() : '';
 
-        const bulletLines = bLines.slice(1);
-        const hook = (bulletLines[0] || header).slice(0, 135);
-        const summary = bulletLines.join(' ').slice(0, 260) || header;
+        // Remove the date range before splitting header segments so en-dashes inside dates (e.g. "2021 – 2024") never split the title
+        const headerWithoutDate = dateMatch
+          ? header.replace(dateMatch[0], ' | ').replace(/\(\s*\|\s*\)/g, ' | ')
+          : header;
 
-        const rawPhrases = [];
-        bulletLines.forEach(bl => {
-          bl.split(/[.;,]/).forEach(seg => {
-            const clean = seg.trim();
-            if (clean.length >= 4) rawPhrases.push(clean);
-          });
-        });
-        while (rawPhrases.length < 5) {
-          rawPhrases.push(`Subsystem Module 0${rawPhrases.length + 1}`);
+        const parts = headerWithoutDate
+          .split(/\s*\|\s*|\s+[—–-]\s+|\s+[@•]\s+/)
+          .map(s => s.replace(/^[(),\s]+|[(),\s]+$/g, '').trim())
+          .filter(Boolean);
+
+        let title = parts[0] || header;
+        let role = parts[1] || '';
+
+        if (parts.length >= 2) {
+          const p0IsRole = roleKeywordRe.test(parts[0]) && !roleKeywordRe.test(parts[1]);
+          if (p0IsRole) {
+            role = parts[0];
+            title = parts[1];
+          } else {
+            title = parts[0];
+            role = parts.slice(1).join(' · ');
+          }
+        } else if (bLines[1] && bLines[1].length <= 60 && roleKeywordRe.test(bLines[1])) {
+          role = bLines[1];
         }
 
-        const nodes = rawPhrases.slice(0, 5).map((phrase, nIdx) => {
-          const words = phrase.split(/\s+/).slice(0, 4).join(' ');
-          return {
-            id: String(nIdx + 1).padStart(2, '0'),
-            name: words.slice(0, 32),
-            detail: phrase.slice(0, 130),
-            pos: DEFAULT_NODE_COORDS[nIdx]
-          };
+        title = title.slice(0, 48);
+        role = role.slice(0, 52);
+        const indexPhrase = (role || title).split(/\s+/).slice(0, 5).join(' ');
+
+        const bulletStartIdx = (role && bLines[1] === role) ? 2 : 1;
+        const bulletLines = bLines.slice(bulletStartIdx);
+        const hook = (bulletLines[0] || role || header).slice(0, 145);
+        const summary = (bulletLines.join(' ') || header).slice(0, 280);
+
+        // Build nodes strictly from the actual resume bullets/clauses without inventing "Subsystem Module" names
+        const rawItems = [];
+        bulletLines.forEach(bl => {
+          const cleaned = bl.trim();
+          if (cleaned.length >= 4) {
+            rawItems.push(cleaned);
+          }
         });
 
-        const metricMatches = block.match(/\b\d+[kKmM%+xX]*\b/g) || ['100%', '3x', 'Live'];
+        // If a project has fewer than 5 bullets, split compound bullets on semicolons or clause breaks so every node is real text from the resume
+        if (rawItems.length < 5) {
+          const expanded = [];
+          rawItems.forEach(item => {
+            const subParts = item.split(/\s*;\s*|\s+—\s+|\s+and\s+(?=[a-z]+ed\b)/i).map(s => s.trim()).filter(s => s.length >= 6);
+            if (subParts.length > 1) {
+              expanded.push(...subParts);
+            } else {
+              expanded.push(item);
+            }
+          });
+          rawItems.length = 0;
+          rawItems.push(...expanded);
+        }
+
+        if (rawItems.length === 0) {
+          rawItems.push(header);
+        }
+
+        const nodes = rawItems.slice(0, 5).map((phrase, nIdx) => ({
+          id: String(nIdx + 1).padStart(2, '0'),
+          name: extractAuthenticItemName(phrase) || phrase.slice(0, 44),
+          detail: phrase.slice(0, 160),
+          pos: DEFAULT_NODE_COORDS[nIdx % DEFAULT_NODE_COORDS.length]
+        }));
+
+        const metricMatches = block.match(/\b\d+(?:[.,]\d+)?[kKmM%+xX]+\b/g) || [];
         const metrics = [
-          { label: 'Key Metric', value: metricMatches[0] || 'Active' },
-          { label: 'Scale / Gain', value: metricMatches[1] || 'Production' },
-          { label: 'Architecture', value: MACHINE_ARCHETYPES[idx % MACHINE_ARCHETYPES.length].toUpperCase() }
+          { label: 'Organization / Project', value: title.slice(0, 24) },
+          { label: 'Role / Scope', value: (role || period || 'Core System').slice(0, 24) },
+          { label: metricMatches[0] ? 'Key Impact' : 'Timeline', value: (metricMatches[0] || period || `${nodes.length} Items`).slice(0, 24) }
         ];
 
         return {
@@ -2591,7 +2927,7 @@
         };
       });
 
-      const candidateSubmeta = `${compiled.length} Endeavors · Interactive Systems`;
+      const candidateSubmeta = `${compiled.length} ${compiled.length === 1 ? 'Endeavor' : 'Endeavors'}`;
       return { candidateName, candidateMeta, candidateSubmeta, endeavors: compiled };
     }
 
@@ -2599,19 +2935,22 @@
       const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
-      const systemPrompt = `You convert a user's resume into an array of interactive 3D kinetic machines following progressive disclosure.
-Extract the candidate's name, a short 2-3 word headline title (candidateMeta, e.g. "Principal AI Engineer"), and a concise sub-metadata row (candidateSubmeta, e.g. "Full Stack · Robotics · MIT" or top 3 domains/schools, max 42 chars).
-Also extract up to 8 distinct projects, roles, or endeavors from the resume.
-For each endeavor:
-- title: Concise project or company name (max 34 chars).
-- indexPhrase: Very short 3-4 word phrase for the sidebar index (e.g. "Custom AI for websites").
-- hook: One clear opening sentence explaining what the project is and why it matters (max 135 chars).
-- role: Role title.
-- period: Dates.
-- summary: 1-2 sentence deeper context with collaborators and contributions.
-- archetype: Pick one of ["gyroscope","conveyor","loom","differential","orrery","turbine","refinery","harmonic"].
-- metrics: Exactly 3 concrete metrics/technologies from the resume ({label, value}).
-- nodes: Exactly 5 actual components/technologies from that project. Each node has {name (2-4 words, sentence case, max 30 chars), detail (1 sentence explaining what that component did in the resume)}.`;
+      const systemPrompt = `You organize a user's resume into up to 8 structured endeavors for an interactive 3D portfolio.
+CRITICAL RULE: Do NOT rename or alter the names of projects, companies, roles, or items into mechanical or machine metaphors (NEVER add words like "Gear", "Turbine", "Piston", "Loom", "Valve", "Belt", "Mill", "Shaft", "Camshaft", "Auger", "Condenser", "Rollers", etc.). Preserve the exact project/company names, role titles, and real technical/domain item names verbatim from the resume so every label makes complete sense as their real work.
+Extract:
+- candidateName: Candidate's actual name.
+- candidateMeta: Short 2-4 word headline role from the resume.
+- candidateSubmeta: Concise sub-metadata row (top domains or schools from the resume, max 42 chars).
+For each endeavor (up to 8):
+- title: Exact project, company, or organization name from the resume (max 44 chars).
+- indexPhrase: Short 3-4 word phrase describing the real work (e.g. "Custom AI for websites").
+- hook: One clear sentence summarizing what was built or achieved (max 140 chars).
+- role: Exact role title from the resume.
+- period: Exact dates from the resume.
+- summary: 1-2 sentence factual summary from the resume.
+- archetype: Pick one of ["gyroscope","conveyor","loom","differential","orrery","turbine","refinery","harmonic"] for visual layout only.
+- metrics: Exactly 3 factual metrics, technologies, or scope items from the resume ({label, value}).
+- nodes: Up to 5 actual items, systems, features, or accomplishments directly from that project in the resume. Each node has {name (the authentic item/feature/technology name from the resume, 2-5 words, max 44 chars, NO machine metaphors), detail (1 factual sentence from the resume explaining what it did)}.`;
 
       const payload = {
         contents: [{ parts: [{ text: rawText }] }],
@@ -2691,7 +3030,7 @@ For each endeavor:
         metrics: (e.metrics || []).slice(0, 3),
         nodes: (e.nodes || []).slice(0, 5).map((n, nIdx) => ({
           id: String(nIdx + 1).padStart(2, '0'),
-          name: String(n.name || `Module 0${nIdx + 1}`).slice(0, 32),
+          name: String(n.name || `Item 0${nIdx + 1}`).slice(0, 48),
           detail: String(n.detail || e.hook || ''),
           pos: DEFAULT_NODE_COORDS[nIdx % DEFAULT_NODE_COORDS.length]
         }))
