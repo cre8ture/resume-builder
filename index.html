@@ -1,0 +1,3081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kinetic Endeavors — Interactive 3D Machine Resume</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter, Space Grotesk, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- PDF.js for client-side PDF resume parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #F4F3EF;
+      --bg-panel: rgba(244, 243, 239, 0.72);
+      --bg-card: rgba(235, 233, 226, 0.75);
+      --text-primary: #111111;
+      --text-secondary: #4A4A46;
+      --text-muted: #787872;
+      --border-hairline: #D4D2C8;
+      --border-strong: #111111;
+      --node-bg: rgba(244, 243, 239, 0.90);
+      --accent-active: #111111;
+      --accent-active-text: #F4F3EF;
+      --accent-active-subtext: #D6D4CA;
+    }
+
+    body.dark-polarity {
+      --bg-primary: #0D0D0D;
+      --bg-panel: rgba(16, 16, 16, 0.72);
+      --bg-card: rgba(24, 24, 24, 0.76);
+      --text-primary: #F0EFEA;
+      --text-secondary: #B0B0A8;
+      --text-muted: #707068;
+      --border-hairline: #262626;
+      --border-strong: #F0EFEA;
+      --node-bg: rgba(18, 18, 18, 0.90);
+      --accent-active: #F0EFEA;
+      --accent-active-text: #0D0D0D;
+      --accent-active-subtext: #3A3A36;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+      transition: background-color 0.35s ease, color 0.35s ease;
+    }
+
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .font-mono-tech {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .hairline-r { border-right: 1px solid var(--border-hairline); }
+    .hairline-l { border-left: 1px solid var(--border-hairline); }
+    .hairline-t { border-top: 1px solid var(--border-hairline); }
+    .hairline-b { border-bottom: 1px solid var(--border-hairline); }
+    .hairline-box { border: 1px solid var(--border-hairline); }
+
+    /* Translucent Frosted Glass Panels so the 3D machine is visible behind them */
+    .glass-panel {
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Left Sidebar Index Row */
+    .endeavor-item {
+      transition: background-color 0.16s ease, color 0.16s ease;
+      cursor: pointer;
+      position: relative;
+      background: transparent;
+    }
+    .endeavor-item:hover {
+      background-color: var(--bg-card);
+    }
+    .endeavor-item.active {
+      background-color: var(--accent-active);
+      color: var(--accent-active-text);
+    }
+    .endeavor-item .item-phrase {
+      color: var(--text-secondary);
+      transition: color 0.16s ease;
+    }
+    .endeavor-item.active .item-phrase {
+      color: var(--accent-active-subtext);
+    }
+    .endeavor-item .item-num {
+      color: var(--text-muted);
+      transition: color 0.16s ease;
+    }
+    .endeavor-item.active .item-num {
+      color: var(--accent-active-subtext);
+    }
+
+    /* 3D Node Callout Labels & Schematic Diagram Node Cards */
+    .callout-tag {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: var(--node-bg);
+      border: 1px solid var(--border-hairline);
+      padding: 4px 9px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text-secondary);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, padding 0.28s ease, width 0.28s ease;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 15;
+      border-radius: 3px;
+    }
+    .callout-tag .tag-step {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      opacity: 0.65;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+    .callout-tag .diagram-port-badge,
+    .callout-tag .diagram-node-body {
+      display: none;
+    }
+    .callout-tag:hover, .callout-tag.selected {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      z-index: 25;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+    }
+    .callout-tag.selected {
+      background: var(--accent-active);
+      color: var(--accent-active-text);
+      border-color: var(--accent-active);
+    }
+
+    /* Diagram Mode Morphing Styles */
+    body.diagram-mode .callout-tag {
+      width: clamp(148px, 42vw, 196px);
+      white-space: normal;
+      padding: 8px 10px;
+      text-align: left;
+      background: var(--bg-panel);
+      color: var(--text-primary);
+      border: 1px solid var(--border-hairline);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+    }
+    @media (min-width: 768px) {
+      body.diagram-mode .callout-tag {
+        width: clamp(184px, 19.5vw, 238px);
+        padding: 10px 12px;
+      }
+    }
+    body.diagram-mode .callout-tag .diagram-port-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 1px 4px;
+      border: 1px solid var(--border-hairline);
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    body.diagram-mode .callout-tag .diagram-node-body {
+      display: block;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border-hairline);
+    }
+    body.diagram-mode .callout-tag .tag-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-primary);
+      white-space: normal;
+      line-height: 1.25;
+    }
+    body.diagram-mode .callout-tag .diagram-node-detail {
+      font-size: 10.5px;
+      line-height: 1.42;
+      color: var(--text-secondary);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    body.diagram-mode .callout-tag .diagram-node-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border-hairline);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+    body.diagram-mode .callout-tag:hover {
+      border-color: var(--border-strong);
+      transform: translate(-50%, -50%) translateY(-2px);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+    }
+    body.diagram-mode .callout-tag.selected {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1.5px solid var(--border-strong);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
+      z-index: 28;
+    }
+    body.diagram-mode .callout-tag.selected .diagram-port-badge {
+      background: var(--accent-active);
+      color: var(--accent-active-text);
+      border-color: var(--accent-active);
+    }
+    body.diagram-mode .callout-tag.selected .tag-step {
+      opacity: 1;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    body.diagram-mode.wireframe-mode .callout-tag {
+      background: transparent;
+      backdrop-filter: none;
+      border-style: dashed;
+    }
+
+    /* Architectural Blueprint Backdrop in Diagram Mode */
+    #diagram-backdrop {
+      background-image:
+        linear-gradient(to right, var(--border-hairline) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--border-hairline) 1px, transparent 1px);
+      background-size: 36px 36px;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    body.diagram-mode #canvas-wrapper {
+      cursor: default;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-hairline);
+    }
+
+    /* Tactile CAD Buttons */
+    .cad-btn {
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-panel);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .cad-btn:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-card);
+    }
+    .cad-btn.active {
+      background: var(--accent-active);
+      color: var(--accent-active-text);
+      border-color: var(--accent-active);
+    }
+
+    #canvas-wrapper {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      cursor: grab;
+      z-index: 1;
+    }
+    #canvas-wrapper:active {
+      cursor: grabbing;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden relative">
+
+  <!-- FULL-BLEED 3D INTERACTIVE MACHINE STAGE (Spans behind left sidebar & top-right card) -->
+  <div id="canvas-wrapper">
+    <div id="diagram-backdrop" class="pointer-events-none absolute inset-0"></div>
+    <canvas id="three-canvas"></canvas>
+    <svg id="diagram-svg-layer" class="pointer-events-none absolute inset-0 w-full h-full overflow-visible" style="opacity: 0; z-index: 10;"></svg>
+    <div id="callouts-container" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
+  </div>
+
+  <!-- FOREGROUND UI OVERLAY LAYER -->
+  <div class="relative z-10 h-full w-full flex flex-col md:flex-row pointer-events-none">
+
+    <!-- LEFT PANEL: TRANSLUCENT GLASS ENDEAVOR INDEX & EXPORT FOOTER -->
+    <aside class="w-full md:w-[320px] lg:w-[350px] h-[38vh] md:h-full hairline-r flex flex-col justify-between shrink-0 z-20 glass-panel pointer-events-auto">
+      
+      <!-- Top Compiler Action + Candidate Identity & Resume Metadata -->
+      <header class="px-4 py-3.5 hairline-b flex flex-col gap-2.5">
+        <div id="compiler-toolbar-row" class="flex items-center gap-1.5">
+          <button id="btn-open-compiler" type="button" class="cad-btn w-full py-1.5 flex items-center justify-center gap-1.5 font-medium" style="border-color: var(--border-strong);">
+            <span>+ COMPILE YOUR RESUME</span>
+          </button>
+          <button id="btn-reset-kai" type="button" class="cad-btn py-1.5 px-2.5 hidden shrink-0" title="Restore Kai Kleinbard Default">
+            RESET
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-0.5 pt-0.5">
+          <div class="flex items-baseline justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="inline-block w-2 h-2 rounded-full shrink-0" style="background: var(--text-primary);"></span>
+              <h1 id="active-profile-label" class="font-display text-sm font-semibold tracking-tight truncate">
+                Kai Kleinbard
+              </h1>
+            </div>
+            <span id="active-profile-meta" class="font-mono-tech text-[10px] uppercase tracking-wider truncate shrink-0" style="color: var(--text-secondary);">
+              Principal AI Engineer
+            </span>
+          </div>
+          <div id="active-profile-submeta" class="font-mono-tech text-[9px] uppercase tracking-wider truncate pl-4" style="color: var(--text-muted);">
+            Full Stack · Product · Harvard / UPenn / GT
+          </div>
+        </div>
+      </header>
+
+      <!-- Endeavors Index List (Clean: Number + Title + 1 Short Phrase) -->
+      <div id="endeavor-list" class="flex-1 overflow-y-auto divide-y" style="border-color: var(--border-hairline);">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Bottom Row of Resume Panel: Download Standalone HTML, Theme Toggle, & Share Compressed Link -->
+      <footer id="sidebar-export-footer" class="px-3.5 py-3 hairline-t flex flex-col gap-2 shrink-0">
+        <div class="flex items-center gap-1.5">
+          <button id="btn-download-html" type="button" class="cad-btn flex-1 py-2 flex items-center justify-center gap-1 font-medium" title="Download standalone interactive HTML of this resume without compiler tools">
+            <span>↓ DOWNLOAD</span>
+          </button>
+          <button id="btn-theme-toggle" type="button" class="cad-btn py-2 px-2.5 flex items-center justify-center gap-1.5 font-medium" title="Toggle Light / Dark Mode (Saved for future visits, downloads, and share links)">
+            <span id="theme-indicator-dot" class="w-1.5 h-1.5 rounded-full" style="background: currentColor;"></span>
+            <span id="theme-toggle-label">DARK MODE</span>
+          </button>
+          <button id="btn-share-link" type="button" class="cad-btn flex-1 py-2 flex items-center justify-center gap-1 font-medium" title="Compress resume into a self-contained shareable URL">
+            <span>⇄ SHARE LINK</span>
+          </button>
+        </div>
+        <!-- Inline feedback / copyable share link tray -->
+        <div id="share-feedback-tray" class="hidden flex-col gap-1.5 pt-1">
+          <div class="flex items-center justify-between gap-2">
+            <span id="share-feedback-msg" class="font-mono-tech text-[10px]" style="color: var(--text-secondary);">Compressed link copied to clipboard</span>
+            <button id="btn-close-share-tray" type="button" class="font-mono-tech text-[9px] uppercase" style="color: var(--text-muted);">✕</button>
+          </div>
+          <input id="share-url-input" type="text" readonly class="w-full px-2 py-1 text-[10px] font-mono-tech hairline-box focus:outline-none select-all" style="background: var(--bg-primary); color: var(--text-primary);" />
+        </div>
+      </footer>
+    </aside>
+
+    <!-- RIGHT VIEWPORT OVERLAY: RIGHT-ALIGNED GLASS PROJECT CARD + BOTTOM CONTROLS -->
+    <main class="flex-1 h-[62vh] md:h-full relative flex flex-col justify-between overflow-hidden pointer-events-none">
+
+      <!-- Top Floating Machine Header: Stage Mode Pill on Left (in Diagram Mode) + Right-Aligned Card Container -->
+      <div class="relative z-20 pointer-events-none p-4 md:p-7 flex items-start justify-between gap-4">
+        
+        <!-- Diagram Mode Floating Return Banner (Top-Left of Stage) -->
+        <div id="diagram-stage-banner" class="hidden lg:flex items-center gap-2.5 px-3 py-2 hairline-box glass-panel pointer-events-auto rounded-sm transition-all">
+          <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: var(--text-primary);"></span>
+          <div class="flex flex-col text-left">
+            <span class="font-mono-tech text-[9px] uppercase tracking-widest" style="color: var(--text-muted);">SCHEMATIC ARCHITECTURE VIEW</span>
+            <span id="diagram-topology-label" class="font-mono-tech text-[10px] font-medium" style="color: var(--text-primary);">5 SUBSYSTEMS · CONNECTED BUS</span>
+          </div>
+          <button id="btn-return-machine" type="button" class="cad-btn active py-1 px-2.5 ml-2 flex items-center gap-1 font-medium" title="Animate back to 3D Kinetic Machine (Esc)">
+            <span>← 3D MACHINE</span>
+          </button>
+        </div>
+
+        <div id="top-hud-card" class="max-w-lg w-full pointer-events-auto p-4 md:p-5 hairline-box glass-panel transition-all text-left flex flex-col items-start rounded-sm ml-auto">
+          
+          <!-- Minimal Header Row: Figure ID + Title on Left, Diagram Mode & Expand Toggle on Right -->
+          <div class="w-full flex items-center justify-between gap-2 text-left">
+            <div class="flex items-center justify-start gap-2 min-w-0 text-left">
+              <span id="stage-index" class="font-mono-tech text-[11px] uppercase tracking-wider shrink-0 text-left" style="color: var(--text-muted);">FIG. 01</span>
+              <h2 id="stage-title" class="font-display text-base md:text-lg font-semibold tracking-tight truncate text-left">
+                Project 137: Quantum Sky
+              </h2>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button id="btn-diagram-mode" type="button" class="cad-btn px-2.5 py-1 flex items-center gap-1 font-medium" title="Toggle animated schematic diagram view of all project parts">
+                <span id="btn-diagram-icon" class="text-[10px] leading-none">◇</span>
+                <span id="btn-diagram-label">Diagram</span>
+              </button>
+              <button id="btn-toggle-dossier" type="button" class="font-mono-tech text-[10px] uppercase tracking-wider px-2 py-1 hairline-box hover:opacity-80 transition-opacity shrink-0" style="color: var(--text-secondary);">
+                Read project +
+              </button>
+            </div>
+          </div>
+
+          <!-- Single Clear Opening Sentence (Left-Aligned) -->
+          <p id="stage-hook" class="w-full text-left text-xs md:text-[13px] leading-relaxed mt-1.5" style="color: var(--text-secondary);">
+            Distributed AI agent mesh keeping search-and-rescue, medical, and intelligence teams operational when networks fail.
+          </p>
+
+          <!-- Active Component Inspection Bar (Left-Aligned) -->
+          <div id="node-inspector-bar" class="w-full mt-3 pt-2.5 hairline-t flex items-start justify-start gap-3 text-left">
+            <div class="min-w-0 w-full text-left">
+              <div class="flex items-center justify-start gap-2 text-left">
+                <span class="inline-block w-1.5 h-1.5 rounded-full shrink-0" style="background: var(--text-primary);"></span>
+                <span id="node-inspector-title" class="text-xs font-semibold text-left">DDIL Agent Orchestrator</span>
+                <span id="node-inspector-step" class="font-mono-tech text-[10px] text-left" style="color: var(--text-muted);">01/05</span>
+              </div>
+              <p id="node-inspector-detail" class="text-xs leading-relaxed mt-0.5 text-left" style="color: var(--text-secondary);">
+                Coordinates autonomous decision-making across disconnected field nodes in denied and degraded communication zones.
+              </p>
+            </div>
+          </div>
+
+          <!-- Expandable Deep Inspection Drawer (Role, Dates, Full Context & Evidence Metrics - Left-Aligned) -->
+          <div id="stage-dossier" class="hidden w-full mt-3 pt-3 hairline-t text-left">
+            <div class="flex flex-wrap items-center justify-start gap-x-3 gap-y-1 font-mono-tech text-[10px] uppercase tracking-wider mb-2 text-left" style="color: var(--text-muted);">
+              <span id="stage-role" class="text-left">AI/ML Principal Engineer · Tech Lead</span>
+              <span>·</span>
+              <span id="stage-period" class="text-left">Feb 2026 – Present</span>
+            </div>
+            <p id="stage-summary" class="text-xs leading-relaxed text-left" style="color: var(--text-secondary);">
+              Distributed AI agentic systems built for mission-critical Denied, Degraded, Intermittent, and Limited (DDIL) operations alongside unified enterprise intelligence serving 1,000+ personnel.
+            </p>
+            <div id="stage-metrics" class="grid grid-cols-3 gap-2 mt-3 pt-2.5 hairline-t font-mono-tech text-left">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom-Right Compact Machine Controls -->
+      <div class="relative z-20 pointer-events-none p-4 md:p-6 flex items-end justify-between gap-4">
+        <div id="stage-hint-pill" class="hidden sm:flex items-center gap-2 font-mono-tech text-[10px] px-2.5 py-1 hairline-box glass-panel pointer-events-auto" style="color: var(--text-muted);">
+          <span id="stage-hint-text">DRAG TO ORBIT · CLICK NODE TO INSPECT</span>
+        </div>
+        <div class="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 ml-auto">
+          <button id="btn-diagram-toolbar" class="cad-btn font-medium" title="Toggle Schematic Diagram Mode (D)">◇ DIAGRAM</button>
+          <button id="btn-pulse" class="cad-btn" title="Surge Energy Flow">SURGE</button>
+          <button id="btn-explode" class="cad-btn" title="Explode Assembly">EXPLODE</button>
+          <button id="btn-wireframe" class="cad-btn" title="Blueprint Wireframe">X-RAY</button>
+          <button id="btn-polarity" class="cad-btn" title="Invert Theme">INVERT</button>
+          <button id="btn-reset-cam" class="cad-btn" title="Reset Camera / Layout">CENTER</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL: COMPILE ANY RESUME (SUPPORTS PDF, TXT, MD, OR PASTE) -->
+  <div id="compiler-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(10, 10, 10, 0.65); backdrop-filter: blur(6px);">
+    <div class="w-full max-w-2xl hairline-box p-6 md:p-8 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto" style="background: var(--bg-primary); color: var(--text-primary);">
+      <div class="flex items-start justify-between gap-4 hairline-b pb-3">
+        <div>
+          <div class="font-mono-tech text-[10px] uppercase tracking-widest" style="color: var(--text-muted);">RESUME-TO-MACHINE COMPILER</div>
+          <h3 class="font-display text-lg md:text-xl font-bold tracking-tight mt-0.5">Turn Your Resume Into Interactive 3D Machines</h3>
+        </div>
+        <button id="btn-close-compiler" type="button" class="cad-btn px-2.5 py-1">✕</button>
+      </div>
+
+      <p class="text-xs leading-relaxed" style="color: var(--text-secondary);">
+        Upload a <strong>PDF</strong> or text resume—or paste your experience below. Each endeavor is transformed into an interactive 3D kinetic diagram where exploring the machine reveals your work.
+      </p>
+
+      <!-- File Upload Row (Supports PDF + TXT/MD) -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <label for="resume-file-input" class="cad-btn cursor-pointer inline-flex items-center gap-1.5">
+            <span>↑ UPLOAD PDF / TXT</span>
+          </label>
+          <input id="resume-file-input" type="file" accept=".pdf,.txt,.md,.json,application/pdf" class="hidden" />
+          <button id="btn-load-sample-resume" type="button" class="cad-btn">
+            LOAD SAMPLE ROBOTICS RESUME
+          </button>
+        </div>
+        <span id="compiler-status-msg" class="font-mono-tech text-[10px]" style="color: var(--text-muted);">
+          PDF.JS + AI COMPILER READY
+        </span>
+      </div>
+
+      <textarea id="resume-textarea" rows="9" placeholder="Paste any resume or project history here (or upload a PDF above)..." class="w-full p-3 text-xs font-mono-tech hairline-box focus:outline-none select-text" style="background: var(--bg-panel); color: var(--text-primary); resize: vertical;"></textarea>
+
+      <div class="flex items-center justify-end gap-2 pt-2 hairline-t">
+        <button id="btn-cancel-compiler" type="button" class="cad-btn px-4 py-2">CANCEL</button>
+        <button id="btn-run-compiler" type="button" class="cad-btn active px-5 py-2 font-semibold">
+          COMPILE TO 3D MACHINES →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    // Configure PDF.js worker
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    /**
+     * ============================================================================
+     * KAI KLEINBARD'S ENDEAVORS (PROGRESSIVE DISCLOSURE STRUCTURE)
+     * - indexPhrase: 3-4 words shown in the left index panel
+     * - hook: 1 clear opening sentence shown above the machine
+     * - nodes: 5 labeled components with specific 1-sentence explanations
+     * - summary, role, period, metrics: revealed when "Read project +" is toggled
+     * ============================================================================
+     */
+    const KAI_ENDEAVORS = [
+      {
+        id: 'quantum-sky',
+        num: '01',
+        title: 'Project 137: Quantum Sky',
+        indexPhrase: 'DDIL multi-agent mesh',
+        hook: 'Distributed AI agent mesh keeping search-and-rescue, medical, and intelligence teams operational when networks fail.',
+        role: 'AI/ML Principal Engineer · Tech Lead',
+        period: 'Feb 2026 – Present',
+        summary: 'Architected distributed AI agentic systems for mission-critical Denied, Degraded, Intermittent, and Limited (DDIL) field environments alongside a unified enterprise intelligence platform serving 1,000+ employees.',
+        metrics: [
+          { label: 'Environment', value: 'DDIL Field Ops' },
+          { label: 'Enterprise Scale', value: '1,000+ Staff' },
+          { label: 'Domains', value: 'SAR / Med / Intel' }
+        ],
+        nodes: [
+          { id: '01', name: 'DDIL Agent Orchestrator', detail: 'Coordinates autonomous task routing when primary satellite or cellular links drop out.', pos: [0, 0.2, 0] },
+          { id: '02', name: 'Search & Rescue Node', detail: 'Processes field telemetry locally to guide emergency response teams in zero-connectivity zones.', pos: [-2.3, 1.3, 0.8] },
+          { id: '03', name: 'Medical Triage Relay', detail: 'Buffers and prioritizes clinical diagnostics across intermittent tactical radio hops.', pos: [2.3, 1.2, -0.7] },
+          { id: '04', name: 'Tactical Intel Sync Valve', detail: 'Gates and compresses high-priority intelligence packets during brief bandwidth windows.', pos: [-2.0, -1.3, -0.9] },
+          { id: '05', name: '1,000+ Employee Knowledge Hub', detail: 'Unifies cross-organization enterprise intelligence into a single queryable graph.', pos: [2.2, -1.2, 0.9] }
+        ]
+      },
+      {
+        id: 'harvard-quarch',
+        num: '02',
+        title: 'Harvard Edge Lab: Quarch',
+        indexPhrase: 'Parallel edge AI evaluation',
+        hook: 'Parallel multi-agent evaluation factory benchmarking 100,000 educational records for on-device edge AI.',
+        role: 'Harvard Edge Computing Researcher',
+        period: 'Jan 2024 – Present',
+        summary: 'Built the Quarch parallel multi-agent assessment pipeline for a 100k dataset at Harvard Edge Computing Lab, supported by Google and Qualcomm to deploy educational AI directly onto constrained edge hardware.',
+        metrics: [
+          { label: 'Dataset Volume', value: '100,000 Records' },
+          { label: 'Partners', value: 'Google & Qualcomm' },
+          { label: 'Target', value: 'On-Device Edge AI' }
+        ],
+        nodes: [
+          { id: '01', name: '100k Quarch Dataset Belt', detail: 'Streams 100,000 structured benchmark items continuously into the evaluation pipeline.', pos: [-2.6, -0.6, 0.5] },
+          { id: '02', name: 'Parallel Multi-Agent Mill', detail: 'Runs concurrent grading and verification agents across partitioned dataset shards.', pos: [-0.8, 0.9, 0] },
+          { id: '03', name: 'Assessment Scoring Pistons', detail: 'Validates model reasoning accuracy and latency constraints per sample.', pos: [0.6, 0.8, 0.6] },
+          { id: '04', name: 'Google / Qualcomm Edge Runtime', detail: 'Quantizes and compiles validated models for low-power Qualcomm and Google NPU targets.', pos: [1.6, -0.2, -0.5] },
+          { id: '05', name: 'EdTech Device Deployment', detail: 'Packages offline-capable AI tutors for classroom hardware without cloud dependency.', pos: [2.7, -0.5, 0.4] }
+        ]
+      },
+      {
+        id: 'avaya-genai',
+        num: '03',
+        title: 'Avaya GenAI Orchestration',
+        indexPhrase: 'Chatbot & demo synthesis',
+        hook: 'Frontend orchestration engine that weaves conversational AI flows and generates live custom client demos on demand.',
+        role: 'Software Engineer · Generative AI Full Stack',
+        period: 'Jan 2024 – 2026',
+        summary: 'Designed and built generative AI chatbot frontend orchestration, automated website generation tools for tailored enterprise demos, and real-time data visualization pipelines at Avaya.',
+        metrics: [
+          { label: 'Core System', value: 'Chatbot Orchestrator' },
+          { label: 'Automation', value: 'Live Demo Builder' },
+          { label: 'Analytics', value: 'Data Viz Engine' }
+        ],
+        nodes: [
+          { id: '01', name: 'GenAI Chatbot Intake Drum', detail: 'Ingests multi-turn customer intents and normalizes context for downstream agents.', pos: [-2.4, 0.2, 0] },
+          { id: '02', name: 'Frontend Orchestration Loom', detail: 'Routes live streaming LLM responses into interactive UI state transitions.', pos: [0, 1.3, 0] },
+          { id: '03', name: 'Website Demo Generator Press', detail: 'Synthesizes customized, branded client demo web applications in seconds.', pos: [0.4, -0.4, 1.0] },
+          { id: '04', name: 'Data Orchestration Bus', detail: 'Synchronizes enterprise CRM and telemetry streams with conversational state.', pos: [2.2, 0.7, -0.6] },
+          { id: '05', name: 'Live Telemetry Equalizer', detail: 'Renders real-time conversation metrics and sentiment analytics for operators.', pos: [2.2, -0.9, 0.7] }
+        ]
+      },
+      {
+        id: 'mlsysbook-tinytorch',
+        num: '04',
+        title: 'MLSysBook & TinyTorch',
+        indexPhrase: 'Open-source ML systems & engine',
+        hook: 'From-scratch deep learning framework and 11,000+ star open-source curriculum teaching how AI systems work under the hood.',
+        role: 'AI & ML Systems Lead Designer · Harvard',
+        period: 'Jan 2023 – 2025',
+        summary: 'Co-created MLSysBook (11,000+ GitHub stars), built TinyTorch (PyTorch implemented from scratch for thousands of learners), and embedded browser-native generative AI learning agents.',
+        metrics: [
+          { label: 'MLSysBook', value: '11,000+ GitHub Stars' },
+          { label: 'TinyTorch', value: '1,000s of Users' },
+          { label: 'Runtime', value: 'In-Browser Agents' }
+        ],
+        nodes: [
+          { id: '01', name: 'TinyTorch Tensor Differential', detail: 'Implements raw multi-dimensional tensor operations and memory strides from scratch.', pos: [-2.1, 0, 0.5] },
+          { id: '02', name: 'MLSysBook (11k+ Stars) Core', detail: 'Structures systems-level machine learning engineering into interactive chapters.', pos: [0, 0.4, 0] },
+          { id: '03', name: 'Browser Learning AI Agent', detail: 'Runs Socratic code-review and debugging agents directly inside the student browser.', pos: [0, 1.6, 0] },
+          { id: '04', name: 'Autograd Backprop Shaft', detail: 'Traces computational graphs and propagates gradients backward through custom ops.', pos: [1.9, -0.3, -0.5] },
+          { id: '05', name: 'Open-Source Education Portal', detail: 'Delivers accessible non-profit AI engineering education to thousands of developers.', pos: [0, -1.4, 0.7] }
+        ]
+      },
+      {
+        id: 'socratio',
+        num: '05',
+        title: 'Socratio',
+        indexPhrase: 'Custom AI for websites',
+        hook: 'Co-founded startup deploying custom generative AI agents to any website, backed by Google Gemini and Qualcomm collaborations.',
+        role: 'Co-Founder · AI Specialist Full Stack',
+        period: 'Mar 2023 – 2025',
+        summary: 'Co-founded Socratio to deploy custom generative AI to any website. Collaborated with the Google Gemini team on adaptive textbooks at Harvard with TinyML integration and partnered with Qualcomm on global learning.',
+        metrics: [
+          { label: 'Venture Role', value: 'Co-Founder' },
+          { label: 'Collaboration', value: 'Google Gemini Team' },
+          { label: 'Global Partner', value: 'Qualcomm Initiative' }
+        ],
+        nodes: [
+          { id: '01', name: 'Google Gemini Adaptive Core', detail: 'Powers dynamic Socratic dialogue tailored to each reader’s comprehension level.', pos: [0, 1.2, 0] },
+          { id: '02', name: 'Universal Website Injector', detail: 'Embeds custom-trained AI assistants into any third-party DOM with a single script.', pos: [-1.8, -0.8, 1.2] },
+          { id: '03', name: 'Harvard Adaptive Textbook', detail: 'Transforms static academic chapters into interactive, personalized simulations.', pos: [2.1, -0.4, 0.5] },
+          { id: '04', name: 'TinyML Sensor Bridge', detail: 'Streams live microcontroller hardware telemetry directly into browser learning labs.', pos: [-1.8, 0.5, -1.2] },
+          { id: '05', name: 'Qualcomm Global Learning Hub', detail: 'Scales edge-AI curriculum across international developer communities.', pos: [0.8, -1.1, -1.5] }
+        ]
+      },
+      {
+        id: 'freelance-ai',
+        num: '06',
+        title: 'Stability AI · AWS 5x · Big Lift',
+        indexPhrase: 'High-speed LLM & QA inference',
+        hook: 'High-throughput inference tuning that boosted Stability AI prompt accuracy by 80% and accelerated AWS QA pipelines 5x.',
+        role: 'AI Specialist · Principal Consultant',
+        period: 'Jan 2019 – 2024',
+        summary: 'Fine-tuned GPT models for Stability AI (+80% accuracy), engineered custom AWS HuggingFace QA inference (5x speedup), built Big Lift AI (-50% latency, 2x accuracy), and created custom LLM eval suites (+20% scores).',
+        metrics: [
+          { label: 'Stability AI', value: '+80% Prompt Acc' },
+          { label: 'AWS Inference', value: '5x Speedup' },
+          { label: 'Big Lift AI', value: '-50% Latency / 2x Acc' }
+        ],
+        nodes: [
+          { id: '01', name: 'Stability AI GPT Tuner (+80%)', detail: 'Fine-tuned GPT prompt expansion models to improve image generation fidelity by 80%.', pos: [-2.4, 0, 0] },
+          { id: '02', name: 'AWS HuggingFace 5x Turbine', detail: 'Optimized custom AWS GPU inference containers for a 5x leap in QA throughput.', pos: [-0.4, 0.2, 0] },
+          { id: '03', name: 'Big Lift Bypass (-50% Latency)', detail: 'Cut end-to-end production response latency in half while doubling answer accuracy.', pos: [0.3, -1.2, 0.6] },
+          { id: '04', name: 'Custom LLM Evals (+20%)', detail: 'Built deterministic evaluation harnesses from scratch, lifting benchmark scores 20%.', pos: [1.6, 1.3, 0] },
+          { id: '05', name: 'LangChain / LlamaIndex Stack', detail: 'Delivered full-stack Next.js retrieval applications into production.', pos: [2.5, 0, 0] }
+        ]
+      },
+      {
+        id: 'studyduck',
+        num: '07',
+        title: 'StudyDuck Document Engine',
+        indexPhrase: '3x faster PDF neural synthesis',
+        hook: 'Azure deep-learning pipeline that cleans noisy PDF documents and distills structured summaries in seconds at 3x speed.',
+        role: 'Lead Software Engineer · AI',
+        period: 'Jan 2019 – Dec 2022',
+        summary: 'Led engineering at StudyDuck LLC, building an Azure AI pipeline to parse and clean complex PDF text and training a custom deep learning summarization model that achieved a 3x increase in speed and accuracy.',
+        metrics: [
+          { label: 'Model Gain', value: '3x Speed & Accuracy' },
+          { label: 'Cloud Stack', value: 'Microsoft Azure AI' },
+          { label: 'Turnaround', value: 'Sub-Second Summary' }
+        ],
+        nodes: [
+          { id: '01', name: 'PDF Ingestion Calender Rollers', detail: 'Extracts raw layout blocks, tables, and multi-column text from arbitrary PDFs.', pos: [-1.8, 1.3, 0] },
+          { id: '02', name: 'Azure Text Cleaning Sieve', detail: 'Strips OCR artifacts, headers, and boilerplate noise before tokenization.', pos: [-1.4, 0.2, 0.5] },
+          { id: '03', name: '3x Deep Learning Screw Auger', detail: 'Compresses long-form academic documents with 3x higher speed and factual recall.', pos: [0.2, -0.7, 0] },
+          { id: '04', name: 'Semantic Keypoint Condenser', detail: 'Clusters core arguments into structured study flashcards and executive briefs.', pos: [1.8, 0.4, -0.5] },
+          { id: '05', name: 'Instant Summary Ejector', detail: 'Streams formatted summaries back to the user interface within seconds.', pos: [2.6, -0.7, 0.4] }
+        ]
+      },
+      {
+        id: 'upenn-neuro-algo',
+        num: '08',
+        title: 'UPenn & Harvard Research',
+        indexPhrase: 'EEG emotion AI & algorithms',
+        hook: 'Neuro-AI signal research predicting emotion and ADHD markers from EEG waves alongside graduate algorithms instruction for 2,000+ students.',
+        role: 'Researcher & Graduate Teaching Assistant',
+        period: '2020 – 2025',
+        summary: 'Published research on ADHD & EEG data (2024), emotion prediction with AI (2024), TensorFlow Systems Engineering (2024), and Generative Learning (2025), plus award-winning teaching of Algorithms & Discrete Math to 2,000+ UPenn grad students.',
+        metrics: [
+          { label: 'UPenn Reach', value: '2,000+ Grad Students' },
+          { label: 'Award', value: 'Excellence in Teaching' },
+          { label: 'Neuro-AI', value: 'EEG & Emotion Models' }
+        ],
+        nodes: [
+          { id: '01', name: 'ADHD & EEG Wave Oscillators', detail: 'Models multi-channel electroencephalography frequency bands to detect attentional signatures.', pos: [-1.8, 0.8, 0.4] },
+          { id: '02', name: 'AI Emotion Prediction Camshaft', detail: 'Maps non-linear physiological phase shifts into affective state classifications.', pos: [-1.8, -0.9, 0] },
+          { id: '03', name: 'UPenn Algorithms Lattice (2k+ Students)', detail: 'Designed graduate discrete math and graph theory curriculum at the University of Pennsylvania.', pos: [1.6, 0.3, 0] },
+          { id: '04', name: 'TensorFlow Systems Profiler', detail: 'Analyzes hardware-level compute bottlenecks in distributed neural training.', pos: [1.6, -1.1, 0.7] },
+          { id: '05', name: 'Generative Learning Pedagogy', detail: 'Investigates how human cognition co-evolves with interactive AI reasoning tools.', pos: [0, 1.4, -0.6] }
+        ]
+      }
+    ];
+
+    // Active runtime state
+    const EXPORTED_STATE = window.__EXPORTED_RESUME_STATE__ || null;
+    let ENDEAVORS = EXPORTED_STATE ? EXPORTED_STATE.endeavors : [...KAI_ENDEAVORS];
+    let currentResumeRawText = EXPORTED_STATE ? (EXPORTED_STATE.rawText || '') : '';
+    let activeEndeavorIndex = 0;
+    let selectedNodeIndex = 0;
+    let isDossierOpen = false;
+    let isExploded = false;
+    let isWireframe = false;
+    let isDarkPolarity = false;
+    let isDiagramMode = false;
+    let diagramTransition = 0; // 0 = 3D Machine, 1 = Schematic Diagram
+    let diagramEdges = [];
+    let savedMachineSpherical = { theta: 0.68, phi: 1.08, radius: 8.6 };
+    let pulseBoost = 0;
+
+    // Archetype list for mapping compiled resumes to the 8 3D mechanical builders
+    const MACHINE_ARCHETYPES = [
+      'gyroscope',
+      'conveyor',
+      'loom',
+      'differential',
+      'orrery',
+      'turbine',
+      'refinery',
+      'harmonic'
+    ];
+
+    // DOM References
+    const endeavorListEl = document.getElementById('endeavor-list');
+    const calloutsContainerEl = document.getElementById('callouts-container');
+    const diagramSvgLayerEl = document.getElementById('diagram-svg-layer');
+    const diagramBackdropEl = document.getElementById('diagram-backdrop');
+    const diagramStageBannerEl = document.getElementById('diagram-stage-banner');
+    const diagramTopologyLabelEl = document.getElementById('diagram-topology-label');
+    const btnDiagramModeEl = document.getElementById('btn-diagram-mode');
+    const btnDiagramIconEl = document.getElementById('btn-diagram-icon');
+    const btnDiagramLabelEl = document.getElementById('btn-diagram-label');
+    const btnDiagramToolbarEl = document.getElementById('btn-diagram-toolbar');
+    const btnReturnMachineEl = document.getElementById('btn-return-machine');
+    const stageHintTextEl = document.getElementById('stage-hint-text');
+    const nodeInspectorBarEl = document.getElementById('node-inspector-bar');
+    const stageIndexEl = document.getElementById('stage-index');
+    const stageTitleEl = document.getElementById('stage-title');
+    const stageHookEl = document.getElementById('stage-hook');
+    const stageRoleEl = document.getElementById('stage-role');
+    const stagePeriodEl = document.getElementById('stage-period');
+    const stageSummaryEl = document.getElementById('stage-summary');
+    const stageDossierEl = document.getElementById('stage-dossier');
+    const btnToggleDossier = document.getElementById('btn-toggle-dossier');
+    const nodeInspectorTitleEl = document.getElementById('node-inspector-title');
+    const nodeInspectorStepEl = document.getElementById('node-inspector-step');
+    const nodeInspectorDetailEl = document.getElementById('node-inspector-detail');
+
+    // Toggle "Read project +" drawer
+    btnToggleDossier.addEventListener('click', () => {
+      isDossierOpen = !isDossierOpen;
+      stageDossierEl.classList.toggle('hidden', !isDossierOpen);
+      btnToggleDossier.textContent = isDossierOpen ? 'Hide details −' : 'Read project +';
+    });
+
+    /**
+     * ============================================================================
+     * 1. LEFT SIDEBAR INDEX (Minimal: Index Number + Name + 1 Short Phrase)
+     * ============================================================================
+     */
+    function renderEndeavorList() {
+      endeavorListEl.innerHTML = '';
+      ENDEAVORS.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = `endeavor-item px-4 py-3 ${idx === activeEndeavorIndex ? 'active' : ''}`;
+        row.innerHTML = `
+          <div class="flex items-baseline justify-between gap-2">
+            <div class="flex items-baseline gap-2.5 min-w-0">
+              <span class="item-num font-mono-tech text-[10px] shrink-0">${item.num}</span>
+              <h2 class="font-display text-[13px] font-semibold tracking-tight truncate">${item.title}</h2>
+            </div>
+          </div>
+          <p class="item-phrase text-[11px] truncate pl-5 mt-0.5">${item.indexPhrase || item.role || ''}</p>
+        `;
+        row.addEventListener('click', () => {
+          selectEndeavor(idx);
+        });
+        endeavorListEl.appendChild(row);
+      });
+    }
+
+    function updateNodeInspector(nodeIdx) {
+      const endeavor = ENDEAVORS[activeEndeavorIndex];
+      if (!endeavor || !endeavor.nodes || !endeavor.nodes[nodeIdx]) return;
+      const node = endeavor.nodes[nodeIdx];
+      const total = endeavor.nodes.length;
+      nodeInspectorTitleEl.textContent = node.name;
+      nodeInspectorStepEl.textContent = `${node.id}/${String(total).padStart(2, '0')}`;
+      nodeInspectorDetailEl.textContent = node.detail || endeavor.hook;
+    }
+
+    function updateActiveNodeHighlight() {
+      const tags = calloutsContainerEl.querySelectorAll('.callout-tag');
+      tags.forEach((tag, idx) => {
+        tag.classList.toggle('selected', idx === selectedNodeIndex);
+      });
+
+      updateNodeInspector(selectedNodeIndex);
+
+      if (currentMachineGroup && currentMachineGroup.userData.nodeMeshes) {
+        currentMachineGroup.userData.nodeMeshes.forEach((mesh, idx) => {
+          if (mesh && mesh.material) {
+            mesh.scale.setScalar(idx === selectedNodeIndex ? 1.32 : 1.0);
+          }
+        });
+      }
+    }
+
+    /**
+     * ============================================================================
+     * THREE.JS MONOCHROMATIC CAD ENGINE & PROCEDURAL GEOMETRY HELPERS
+     * ============================================================================
+     */
+    const canvasWrapper = document.getElementById('canvas-wrapper');
+    const canvas = document.getElementById('three-canvas');
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(5.5, 4.2, 6.8);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.78);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.68);
+    dirLight1.position.set(8, 14, 10);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.28);
+    dirLight2.position.set(-8, -6, -6);
+    scene.add(dirLight2);
+
+    let matBody, matDark, matAccent, matWire, matLine, matPulse;
+
+    function initMaterials() {
+      const dark = isDarkPolarity;
+      const bodyColor = dark ? 0x1b1b1b : 0xe5e3dc;
+      const darkColor = dark ? 0x2e2e2e : 0xc6c4bc;
+      const strokeColor = dark ? 0xd8d7d2 : 0x181818;
+      const pulseColor = dark ? 0xffffff : 0x111111;
+      const machineAlpha = Math.max(0, 1 - diagramTransition);
+
+      matBody = new THREE.MeshStandardMaterial({
+        color: bodyColor,
+        roughness: 0.72,
+        metalness: 0.12,
+        wireframe: isWireframe,
+        transparent: true,
+        opacity: machineAlpha,
+        depthWrite: machineAlpha > 0.18,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+      });
+
+      matDark = new THREE.MeshStandardMaterial({
+        color: darkColor,
+        roughness: 0.6,
+        metalness: 0.22,
+        wireframe: isWireframe,
+        transparent: true,
+        opacity: machineAlpha,
+        depthWrite: machineAlpha > 0.18,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+      });
+
+      matAccent = new THREE.MeshBasicMaterial({
+        color: strokeColor,
+        wireframe: isWireframe,
+        transparent: true,
+        opacity: machineAlpha
+      });
+
+      matWire = new THREE.LineBasicMaterial({
+        color: strokeColor,
+        transparent: true,
+        opacity: (dark ? 0.52 : 0.62) * machineAlpha
+      });
+
+      matLine = new THREE.LineBasicMaterial({
+        color: strokeColor,
+        transparent: true,
+        opacity: 0.32 * machineAlpha
+      });
+
+      matPulse = new THREE.MeshBasicMaterial({
+        color: pulseColor,
+        transparent: true,
+        opacity: machineAlpha
+      });
+    }
+
+    initMaterials();
+
+    function updateThreeSceneOpacity(alpha) {
+      const a = Math.max(0, Math.min(1, alpha));
+      const visible = a > 0.008;
+      if (currentMachineGroup) currentMachineGroup.visible = visible;
+      if (floorGroup) {
+        floorGroup.visible = visible;
+        floorGroup.children.forEach(grid => {
+          if (grid.material) {
+            if (Array.isArray(grid.material)) {
+              grid.material.forEach(m => { m.transparent = true; m.opacity = a; });
+            } else {
+              grid.material.transparent = true;
+              grid.material.opacity = a;
+            }
+          }
+        });
+      }
+      if (!visible) return;
+      if (matBody) { matBody.opacity = a; matBody.depthWrite = a > 0.18; }
+      if (matDark) { matDark.opacity = a; matDark.depthWrite = a > 0.18; }
+      if (matAccent) matAccent.opacity = a;
+      if (matPulse) matPulse.opacity = a;
+      if (matWire) matWire.opacity = (isDarkPolarity ? 0.52 : 0.62) * a;
+      if (matLine) matLine.opacity = 0.32 * a;
+    }
+
+    function addCADMesh(geometry, material, parent, explodeVec = [0, 0, 0]) {
+      const group = new THREE.Group();
+      const mesh = new THREE.Mesh(geometry, material);
+      group.add(mesh);
+
+      if (!isWireframe) {
+        const edges = new THREE.EdgesGeometry(geometry, 22);
+        const line = new THREE.LineSegments(edges, matWire);
+        group.add(line);
+      }
+
+      group.userData.basePos = new THREE.Vector3(0, 0, 0);
+      group.userData.explodeVec = new THREE.Vector3(...explodeVec);
+      parent.add(group);
+      return group;
+    }
+
+    function createSpurGear(radius, thickness, teeth, holeRadius = 0.2) {
+      const group = new THREE.Group();
+      const bodyGeo = new THREE.CylinderGeometry(radius * 0.88, radius * 0.88, thickness, 24);
+      addCADMesh(bodyGeo, matBody, group);
+
+      const hubGeo = new THREE.CylinderGeometry(holeRadius * 1.6, holeRadius * 1.6, thickness * 1.25, 16);
+      addCADMesh(hubGeo, matDark, group);
+
+      const toothGeo = new THREE.BoxGeometry(radius * 0.22, thickness * 0.92, radius * 0.26);
+      for (let i = 0; i < teeth; i++) {
+        const angle = (i / teeth) * Math.PI * 2;
+        const tooth = addCADMesh(toothGeo, matDark, group);
+        tooth.position.set(Math.cos(angle) * radius * 0.92, 0, Math.sin(angle) * radius * 0.92);
+        tooth.rotation.y = -angle;
+      }
+      return group;
+    }
+
+    function createEnergyCircuit(pointsArray, packetCount, parent) {
+      const vectors = pointsArray.map(p => new THREE.Vector3(...p));
+      const curve = new THREE.CatmullRomCurve3(vectors, false, 'catmullrom', 0.15);
+      const pts = curve.getPoints(50);
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+      const line = new THREE.Line(lineGeo, matLine);
+      parent.add(line);
+
+      const packets = [];
+      const pktGeo = new THREE.BoxGeometry(0.11, 0.11, 0.11);
+      for (let i = 0; i < packetCount; i++) {
+        const pkt = new THREE.Mesh(pktGeo, matPulse);
+        parent.add(pkt);
+        packets.push({
+          mesh: pkt,
+          curve: curve,
+          t: i / packetCount,
+          speed: 0.0032
+        });
+      }
+      return packets;
+    }
+
+    let floorGroup = new THREE.Group();
+    scene.add(floorGroup);
+
+    function buildReferenceFloor() {
+      while (floorGroup.children.length) floorGroup.remove(floorGroup.children[0]);
+      const gridHelper = new THREE.GridHelper(12, 24, isDarkPolarity ? 0x333333 : 0xc8c6be, isDarkPolarity ? 0x1c1c1c : 0xdedcd4);
+      gridHelper.position.y = -2.1;
+      if (gridHelper.material) {
+        if (Array.isArray(gridHelper.material)) {
+          gridHelper.material.forEach(m => { m.transparent = true; m.opacity = Math.max(0, 1 - diagramTransition); });
+        } else {
+          gridHelper.material.transparent = true;
+          gridHelper.material.opacity = Math.max(0, 1 - diagramTransition);
+        }
+      }
+      floorGroup.add(gridHelper);
+    }
+    buildReferenceFloor();
+
+    /**
+     * ============================================================================
+     * 8 UNIQUE KINETIC 3D MACHINE BUILDERS
+     * ============================================================================
+     */
+    let currentMachineGroup = null;
+    let activeEnergyPackets = [];
+    let dynamicUpdaters = [];
+
+    function clearCurrentMachine() {
+      if (currentMachineGroup) {
+        scene.remove(currentMachineGroup);
+      }
+      currentMachineGroup = new THREE.Group();
+      // Shift machine slightly right on wide screens so it sits balanced beside the translucent sidebar
+      currentMachineGroup.position.x = window.innerWidth >= 768 ? 0.35 : 0;
+      scene.add(currentMachineGroup);
+      activeEnergyPackets = [];
+      dynamicUpdaters = [];
+      calloutsContainerEl.innerHTML = '';
+    }
+
+    // 01: PROJECT 137 QUANTUM SKY — Tri-Axial Command Gyroscope + DDIL Shutter Valves
+    function buildQuantumSkyMachine(root) {
+      const core = addCADMesh(new THREE.OctahedronGeometry(0.68, 0), matDark, root, [0, 0.6, 0]);
+      core.position.set(0, 0.2, 0);
+
+      const ring1 = addCADMesh(new THREE.TorusGeometry(1.35, 0.045, 8, 40), matBody, root, [0, 0.3, 0]);
+      ring1.position.set(0, 0.2, 0);
+
+      const ring2 = addCADMesh(new THREE.TorusGeometry(1.75, 0.04, 8, 44), matBody, root, [0, -0.2, 0]);
+      ring2.position.set(0, 0.2, 0);
+      ring2.rotation.x = Math.PI / 3;
+
+      const ring3 = addCADMesh(new THREE.TorusGeometry(2.15, 0.035, 8, 48), matDark, root, [0, -0.5, 0]);
+      ring3.position.set(0, 0.2, 0);
+      ring3.rotation.y = Math.PI / 4;
+
+      const satPositions = [
+        [-2.3, 1.3, 0.8],
+        [2.3, 1.2, -0.7],
+        [-2.0, -1.3, -0.9],
+        [2.2, -1.2, 0.9]
+      ];
+
+      const shutters = [];
+      satPositions.forEach((pos, idx) => {
+        const sx = pos[0] > 0 ? 1 : -1;
+        const sy = pos[1] > 0 ? 1 : -1;
+        const satGroup = new THREE.Group();
+        satGroup.position.set(...pos);
+        satGroup.userData.basePos = satGroup.position.clone();
+        satGroup.userData.explodeVec = new THREE.Vector3(sx * 0.9, sy * 0.6, 0);
+        root.add(satGroup);
+
+        addCADMesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), matBody, satGroup);
+        const dish = addCADMesh(new THREE.ConeGeometry(0.28, 0.25, 12), matDark, satGroup);
+        dish.position.y = 0.42;
+
+        const gatePos = [pos[0] * 0.55, pos[1] * 0.55 + 0.1, pos[2] * 0.55];
+        const gate = addCADMesh(new THREE.BoxGeometry(0.22, 0.42, 0.12), matAccent, root, [sx * 0.4, 0, 0]);
+        gate.position.set(...gatePos);
+        shutters.push({ mesh: gate, baseY: gatePos[1], phase: idx * 1.4 });
+
+        activeEnergyPackets.push(
+          ...createEnergyCircuit([pos, gatePos, [0, 0.2, 0]], 3, root)
+        );
+      });
+
+      const manifold = addCADMesh(new THREE.CylinderGeometry(1.1, 1.3, 0.3, 16), matBody, root, [0, -1.2, 0]);
+      manifold.position.set(0, -1.75, 0);
+
+      dynamicUpdaters.push((t, speed) => {
+        core.rotation.y += 0.015 * speed;
+        core.rotation.z += 0.008 * speed;
+        ring1.rotation.y -= 0.012 * speed;
+        ring1.rotation.x += 0.006 * speed;
+        ring2.rotation.z += 0.014 * speed;
+        ring3.rotation.x -= 0.01 * speed;
+        shutters.forEach(s => {
+          s.mesh.position.y = s.baseY + Math.sin(t * 2.5 + s.phase) * 0.16;
+        });
+      });
+    }
+
+    // 02: HARVARD EDGE LAB (QUARCH) — 100k Dataset Conveyor Belt & 4-Agent Parallel Mill
+    function buildHarvardConveyorMachine(root) {
+      const frame = addCADMesh(new THREE.BoxGeometry(5.6, 0.28, 1.5), matBody, root, [0, -0.8, 0]);
+      frame.position.set(0, -0.7, 0);
+
+      const rollerL = createSpurGear(0.45, 1.35, 12);
+      rollerL.rotation.x = Math.PI / 2;
+      rollerL.position.set(-2.5, -0.7, 0);
+      rollerL.userData.basePos = rollerL.position.clone();
+      rollerL.userData.explodeVec = new THREE.Vector3(-0.9, -0.4, 0);
+      root.add(rollerL);
+
+      const rollerR = createSpurGear(0.45, 1.35, 12);
+      rollerR.rotation.x = Math.PI / 2;
+      rollerR.position.set(2.5, -0.7, 0);
+      rollerR.userData.basePos = rollerR.position.clone();
+      rollerR.userData.explodeVec = new THREE.Vector3(0.9, -0.4, 0);
+      root.add(rollerR);
+
+      const blocks = [];
+      for (let i = 0; i < 8; i++) {
+        const blk = addCADMesh(new THREE.BoxGeometry(0.36, 0.26, 0.55), i % 2 === 0 ? matDark : matBody, root, [0, 0.2, 0]);
+        const progress = i / 8;
+        blk.position.set(-2.4 + progress * 4.8, -0.38, 0);
+        blocks.push({ mesh: blk, progress });
+      }
+
+      const bridge = addCADMesh(new THREE.BoxGeometry(2.8, 0.25, 1.8), matBody, root, [0, 1.1, 0]);
+      bridge.position.set(-0.2, 1.15, 0);
+
+      const agentGears = [];
+      const pistons = [];
+      for (let i = 0; i < 4; i++) {
+        const gx = -1.35 + i * 0.78;
+        const gear = createSpurGear(0.42, 0.22, 10);
+        gear.rotation.x = Math.PI / 2;
+        gear.position.set(gx, 0.75, 0.85);
+        gear.userData.basePos = gear.position.clone();
+        gear.userData.explodeVec = new THREE.Vector3(0, 0.7, 0.8);
+        root.add(gear);
+        agentGears.push({ mesh: gear, dir: i % 2 === 0 ? 1 : -1 });
+
+        const piston = addCADMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.9, 12), matDark, root, [0, 0.9, 0]);
+        piston.position.set(gx, 0.45, 0);
+        pistons.push({ mesh: piston, baseY: 0.45, phase: i * 0.9 });
+      }
+
+      const npuRack = addCADMesh(new THREE.BoxGeometry(0.85, 1.2, 1.5), matDark, root, [1.2, 0.3, 0]);
+      npuRack.position.set(2.3, 0.1, 0);
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[-2.6, -0.4, 0], [-0.8, 0.8, 0], [0.6, 0.8, 0], [2.3, 0.2, 0]], 5, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        rollerL.rotation.y -= 0.025 * speed;
+        rollerR.rotation.y -= 0.025 * speed;
+
+        blocks.forEach(b => {
+          b.progress = (b.progress + 0.0022 * speed) % 1;
+          b.mesh.position.x = -2.4 + b.progress * 4.8;
+          b.mesh.scale.y = (b.mesh.position.x > -1.5 && b.mesh.position.x < 1.1) ? 0.78 : 1.0;
+        });
+
+        agentGears.forEach(g => {
+          g.mesh.rotation.y += 0.03 * g.dir * speed;
+        });
+
+        pistons.forEach(p => {
+          p.mesh.position.y = p.baseY + Math.sin(t * 4.0 + p.phase) * 0.26;
+        });
+      });
+    }
+
+    // 03: AVAYA GENAI ORCHESTRATION — Prompt Drum, XY Gantry Loom & Demo Press
+    function buildAvayaLoomMachine(root) {
+      const drum = createSpurGear(0.85, 1.4, 16);
+      drum.rotation.z = Math.PI / 2;
+      drum.position.set(-2.3, 0.1, 0);
+      drum.userData.basePos = drum.position.clone();
+      drum.userData.explodeVec = new THREE.Vector3(-1.0, 0, 0);
+      root.add(drum);
+
+      const railL = addCADMesh(new THREE.CylinderGeometry(0.06, 0.06, 3.6, 8), matDark, root, [0, 0.8, -0.6]);
+      railL.rotation.z = Math.PI / 2;
+      railL.position.set(0.1, 1.3, -0.7);
+
+      const railR = addCADMesh(new THREE.CylinderGeometry(0.06, 0.06, 3.6, 8), matDark, root, [0, 0.8, 0.6]);
+      railR.rotation.z = Math.PI / 2;
+      railR.position.set(0.1, 1.3, 0.7);
+
+      const shuttle = addCADMesh(new THREE.BoxGeometry(0.55, 0.35, 1.65), matAccent, root, [0, 1.2, 0]);
+      shuttle.position.set(0, 1.3, 0);
+
+      const turret = new THREE.Group();
+      turret.position.set(0.1, -0.7, 0);
+      turret.userData.basePos = turret.position.clone();
+      turret.userData.explodeVec = new THREE.Vector3(0, -0.8, 0);
+      root.add(turret);
+
+      addCADMesh(new THREE.CylinderGeometry(1.15, 1.25, 0.25, 18), matBody, turret);
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2;
+        const card = addCADMesh(new THREE.BoxGeometry(0.65, 0.08, 0.48), matDark, turret);
+        card.position.set(Math.cos(angle) * 0.7, 0.2, Math.sin(angle) * 0.7);
+        card.rotation.y = -angle;
+      }
+
+      const eqBars = [];
+      for (let i = 0; i < 6; i++) {
+        const bar = addCADMesh(new THREE.BoxGeometry(0.22, 0.9, 0.22), i % 2 === 0 ? matBody : matDark, root, [1.0, 0, 0]);
+        bar.position.set(2.25, -0.4, -0.75 + i * 0.3);
+        eqBars.push({ mesh: bar, phase: i * 0.7 });
+      }
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[-2.3, 0.1, 0], [0, 1.3, 0], [0.1, -0.5, 0], [2.25, 0, 0]], 5, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        drum.rotation.x += 0.02 * speed;
+        shuttle.position.x = Math.sin(t * 2.2) * 1.15;
+        turret.rotation.y += 0.012 * speed;
+        eqBars.forEach(b => {
+          const s = 0.4 + Math.abs(Math.sin(t * 3.2 + b.phase)) * 1.1;
+          b.mesh.scale.y = s;
+        });
+      });
+    }
+
+    // 04: MLSYSBOOK & TINYTORCH — Autograd Differential Gearbox & Backprop Shaft
+    function buildTinyTorchDifferentialMachine(root) {
+      const tensorRack = new THREE.Group();
+      tensorRack.position.set(-2.1, 0, 0);
+      tensorRack.userData.basePos = tensorRack.position.clone();
+      tensorRack.userData.explodeVec = new THREE.Vector3(-1.1, 0, 0);
+      root.add(tensorRack);
+
+      for (let x = 0; x < 2; x++) {
+        for (let y = 0; y < 3; y++) {
+          for (let z = 0; z < 2; z++) {
+            const cell = addCADMesh(new THREE.BoxGeometry(0.28, 0.28, 0.28), (x + y + z) % 2 === 0 ? matBody : matDark, tensorRack);
+            cell.position.set((x - 0.5) * 0.36, (y - 1) * 0.36, (z - 0.5) * 0.36);
+          }
+        }
+      }
+
+      const sunGear = createSpurGear(0.95, 0.35, 16);
+      sunGear.rotation.x = Math.PI / 2;
+      sunGear.position.set(0, 0.35, 0);
+      sunGear.userData.basePos = sunGear.position.clone();
+      sunGear.userData.explodeVec = new THREE.Vector3(0, 0.5, 0.5);
+      root.add(sunGear);
+
+      const planet1 = createSpurGear(0.52, 0.32, 10);
+      planet1.rotation.x = Math.PI / 2;
+      planet1.position.set(-1.05, -0.55, 0);
+      planet1.userData.basePos = planet1.position.clone();
+      planet1.userData.explodeVec = new THREE.Vector3(-0.5, -0.5, 0.4);
+      root.add(planet1);
+
+      const planet2 = createSpurGear(0.52, 0.32, 10);
+      planet2.rotation.x = Math.PI / 2;
+      planet2.position.set(1.05, -0.55, 0);
+      planet2.userData.basePos = planet2.position.clone();
+      planet2.userData.explodeVec = new THREE.Vector3(0.5, -0.5, 0.4);
+      root.add(planet2);
+
+      const escapement = addCADMesh(new THREE.BoxGeometry(2.2, 0.14, 0.22), matAccent, root, [0, 1.1, 0]);
+      escapement.position.set(0, 1.55, 0);
+
+      const backpropShaft = addCADMesh(new THREE.CylinderGeometry(0.12, 0.12, 3.8, 12), matDark, root, [0, -1.0, -0.6]);
+      backpropShaft.rotation.z = Math.PI / 2;
+      backpropShaft.position.set(0.2, -1.25, -0.5);
+
+      const cam1 = createSpurGear(0.38, 0.2, 8);
+      cam1.rotation.z = Math.PI / 2;
+      cam1.position.set(1.8, -1.25, -0.5);
+      cam1.userData.basePos = cam1.position.clone();
+      cam1.userData.explodeVec = new THREE.Vector3(0.9, -0.8, -0.5);
+      root.add(cam1);
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[-2.1, 0, 0], [0, 0.35, 0], [1.8, -1.25, -0.5], [-1.05, -0.55, 0], [-2.1, 0, 0]], 6, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        sunGear.rotation.y += 0.02 * speed;
+        planet1.rotation.y -= 0.036 * speed;
+        planet2.rotation.y -= 0.036 * speed;
+        escapement.rotation.z = Math.sin(t * 3.5) * 0.18;
+        cam1.rotation.y -= 0.04 * speed;
+        tensorRack.rotation.y = Math.sin(t * 0.8) * 0.2;
+      });
+    }
+
+    // 05: SOCRATIO — Google Gemini Epistemic Turbine & Universal DOM Carousel
+    function buildSocratioOrreryMachine(root) {
+      const spire = addCADMesh(new THREE.CylinderGeometry(0.45, 0.65, 2.2, 8), matBody, root, [0, 0.6, 0]);
+      spire.position.set(0, 0.1, 0);
+
+      const crown = addCADMesh(new THREE.IcosahedronGeometry(0.55, 0), matDark, root, [0, 1.3, 0]);
+      crown.position.set(0, 1.45, 0);
+
+      const carousel = new THREE.Group();
+      carousel.position.set(0, -0.6, 0);
+      carousel.userData.basePos = carousel.position.clone();
+      carousel.userData.explodeVec = new THREE.Vector3(0, -0.8, 0);
+      root.add(carousel);
+
+      const ring = addCADMesh(new THREE.TorusGeometry(2.15, 0.05, 8, 40), matDark, carousel);
+      ring.rotation.x = Math.PI / 2;
+
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2;
+        const rx = Math.cos(a) * 2.15;
+        const rz = Math.sin(a) * 2.15;
+        const node = addCADMesh(new THREE.BoxGeometry(0.65, 0.45, 0.12), i % 2 === 0 ? matBody : matDark, carousel);
+        node.position.set(rx, 0, rz);
+        node.rotation.y = -a + Math.PI / 2;
+      }
+
+      const tinyNozzle = createSpurGear(0.55, 0.3, 12);
+      tinyNozzle.position.set(-1.8, 0.5, -1.2);
+      tinyNozzle.userData.basePos = tinyNozzle.position.clone();
+      tinyNozzle.userData.explodeVec = new THREE.Vector3(-0.9, 0.4, -0.9);
+      root.add(tinyNozzle);
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[0, 1.45, 0], [-1.8, 0.5, -1.2], [-1.8, -0.6, 1.1], [2.1, -0.6, 0.4], [0, 1.45, 0]], 6, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        crown.rotation.y += 0.022 * speed;
+        crown.rotation.x += 0.01 * speed;
+        carousel.rotation.y += 0.009 * speed;
+        tinyNozzle.rotation.y -= 0.03 * speed;
+      });
+    }
+
+    // 06: STABILITY AI / AWS 5X / BIG LIFT — Multi-Stage 5x Axial Compressor Turbine
+    function buildFreelanceTurbineMachine(root) {
+      const intake = addCADMesh(new THREE.CylinderGeometry(0.95, 0.7, 0.65, 16), matDark, root, [-1.3, 0, 0]);
+      intake.rotation.z = Math.PI / 2;
+      intake.position.set(-2.35, 0.1, 0);
+
+      const shaft = addCADMesh(new THREE.CylinderGeometry(0.16, 0.16, 4.8, 12), matAccent, root, [0, 0, 0]);
+      shaft.rotation.z = Math.PI / 2;
+      shaft.position.set(0, 0.1, 0);
+
+      const rotors = [];
+      for (let i = 0; i < 5; i++) {
+        const radius = 0.62 + i * 0.12;
+        const rotor = createSpurGear(radius, 0.2, 10 + i * 2);
+        rotor.rotation.z = Math.PI / 2;
+        rotor.position.set(-1.35 + i * 0.72, 0.1, 0);
+        rotor.userData.basePos = rotor.position.clone();
+        rotor.userData.explodeVec = new THREE.Vector3((i - 2) * 0.35, 0.45 * (i % 2 === 0 ? 1 : -1), 0);
+        root.add(rotor);
+        rotors.push({ mesh: rotor, speedRatio: (i + 1) * 0.65, dir: i % 2 === 0 ? 1 : -1 });
+      }
+
+      const bypass = addCADMesh(new THREE.CylinderGeometry(0.18, 0.18, 3.2, 12), matBody, root, [0, -0.9, 0.6]);
+      bypass.rotation.z = Math.PI / 2;
+      bypass.position.set(0.1, -1.15, 0.55);
+
+      const gauge = addCADMesh(new THREE.CylinderGeometry(0.55, 0.55, 0.18, 20), matBody, root, [0.5, 1.0, 0]);
+      gauge.rotation.x = Math.PI / 2;
+      gauge.position.set(1.55, 1.35, 0);
+
+      const needle = addCADMesh(new THREE.BoxGeometry(0.06, 0.42, 0.06), matAccent, root, [0.5, 1.0, 0.2]);
+      needle.position.set(1.55, 1.35, 0.14);
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[-2.4, 0.1, 0], [-0.4, 0.1, 0], [0.2, -1.15, 0.55], [2.4, 0.1, 0]], 6, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        rotors.forEach(r => {
+          r.mesh.rotation.x += 0.018 * r.speedRatio * r.dir * speed;
+        });
+        needle.rotation.z = -0.5 + Math.sin(t * 4.5) * 0.35;
+      });
+    }
+
+    // 07: STUDYDUCK — PDF Calender Crushing Rollers & 3x Helical Screw Auger
+    function buildStudyDuckRefineryMachine(root) {
+      const hopper = addCADMesh(new THREE.ConeGeometry(0.85, 0.9, 4), matBody, root, [-0.9, 1.0, 0]);
+      hopper.rotation.x = Math.PI;
+      hopper.rotation.y = Math.PI / 4;
+      hopper.position.set(-1.75, 1.35, 0);
+
+      const roll1 = createSpurGear(0.42, 1.1, 12);
+      roll1.rotation.x = Math.PI / 2;
+      roll1.position.set(-1.35, 0.45, 0);
+      roll1.userData.basePos = roll1.position.clone();
+      roll1.userData.explodeVec = new THREE.Vector3(-0.8, 0.3, 0.4);
+      root.add(roll1);
+
+      const roll2 = createSpurGear(0.42, 1.1, 12);
+      roll2.rotation.x = Math.PI / 2;
+      roll2.position.set(-2.15, 0.45, 0);
+      roll2.userData.basePos = roll2.position.clone();
+      roll2.userData.explodeVec = new THREE.Vector3(-1.2, 0.3, -0.4);
+      root.add(roll2);
+
+      const sieve = addCADMesh(new THREE.BoxGeometry(1.6, 0.14, 1.1), matDark, root, [-0.5, -0.2, 0]);
+      sieve.position.set(-1.2, -0.15, 0);
+      sieve.rotation.z = -0.18;
+
+      const augerGroup = new THREE.Group();
+      augerGroup.position.set(0.55, -0.75, 0);
+      augerGroup.userData.basePos = augerGroup.position.clone();
+      augerGroup.userData.explodeVec = new THREE.Vector3(0.4, -0.7, 0);
+      root.add(augerGroup);
+
+      const augerShaft = addCADMesh(new THREE.CylinderGeometry(0.14, 0.14, 3.4, 12), matAccent, augerGroup);
+      augerShaft.rotation.z = Math.PI / 2;
+
+      for (let i = 0; i < 9; i++) {
+        const flight = addCADMesh(new THREE.CylinderGeometry(0.48, 0.48, 0.08, 14), i % 2 === 0 ? matBody : matDark, augerGroup);
+        flight.rotation.z = Math.PI / 2 + 0.25;
+        flight.position.x = -1.4 + i * 0.35;
+      }
+
+      const condenser = addCADMesh(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16), matBody, root, [1.1, 0.5, 0]);
+      condenser.position.set(2.15, 0.25, 0);
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[-1.75, 1.35, 0], [-1.75, 0.45, 0], [-1.0, -0.75, 0], [2.15, -0.75, 0], [2.15, 0.25, 0]], 6, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        roll1.rotation.y += 0.03 * speed;
+        roll2.rotation.y -= 0.03 * speed;
+        sieve.position.x = -1.2 + Math.sin(t * 14) * 0.05;
+        augerGroup.rotation.x += 0.045 * speed;
+      });
+    }
+
+    // 08: UPENN & HARVARD RESEARCH — Cam-Driven EEG Wave Machine & Discrete Graph Lattice
+    function buildNeuroGraphMachine(root) {
+      const camShaft = addCADMesh(new THREE.CylinderGeometry(0.12, 0.12, 3.0, 12), matDark, root, [-0.9, -0.8, 0]);
+      camShaft.rotation.z = Math.PI / 2;
+      camShaft.position.set(-1.45, -1.0, 0);
+
+      const waveRods = [];
+      for (let i = 0; i < 9; i++) {
+        const rx = -2.65 + i * 0.3;
+        const cam = addCADMesh(new THREE.CylinderGeometry(0.26, 0.26, 0.12, 14), matBody, root, [-0.9, -0.8, 0]);
+        cam.rotation.z = Math.PI / 2;
+        cam.position.set(rx, -1.0, 0);
+
+        const rod = addCADMesh(new THREE.BoxGeometry(0.12, 1.5, 0.12), i % 2 === 0 ? matBody : matDark, root, [-0.9, 0.5, 0]);
+        rod.position.set(rx, 0.1, 0);
+
+        const tip = addCADMesh(new THREE.SphereGeometry(0.12, 10, 10), matAccent, rod);
+        tip.position.y = 0.82;
+
+        waveRods.push({ rod, cam, phase: i * 0.55 });
+      }
+
+      const graphLattice = new THREE.Group();
+      graphLattice.position.set(1.55, 0.15, 0);
+      graphLattice.userData.basePos = graphLattice.position.clone();
+      graphLattice.userData.explodeVec = new THREE.Vector3(1.1, 0.3, 0);
+      root.add(graphLattice);
+
+      const outerPoly = addCADMesh(new THREE.IcosahedronGeometry(1.25, 0), matBody, graphLattice);
+      const innerPoly = addCADMesh(new THREE.DodecahedronGeometry(0.65, 0), matDark, graphLattice);
+
+      activeEnergyPackets.push(
+        ...createEnergyCircuit([[-2.65, 0.8, 0], [-1.45, 0.9, 0], [-0.25, 0.8, 0], [1.55, 0.15, 0]], 5, root)
+      );
+
+      dynamicUpdaters.push((t, speed) => {
+        waveRods.forEach(w => {
+          const offset = Math.sin(t * 3.2 + w.phase) * 0.42;
+          w.rod.position.y = 0.1 + offset;
+          w.cam.rotation.x += 0.03 * speed;
+        });
+        outerPoly.rotation.y += 0.01 * speed;
+        outerPoly.rotation.x += 0.006 * speed;
+        innerPoly.rotation.y -= 0.018 * speed;
+      });
+    }
+
+    /**
+     * ============================================================================
+     * SCHEMATIC DIAGRAM TOPOLOGY & SVG CONNECTION BUILDER
+     * ============================================================================
+     */
+    function getEndeavorDiagramSpec(item, index) {
+      const arch = item.archetype || MACHINE_ARCHETYPES[index % MACHINE_ARCHETYPES.length];
+      const count = (item.nodes || []).length;
+
+      // 3 Architectural Topologies tailored to machine families
+      if (arch === 'gyroscope' || arch === 'orrery') {
+        return {
+          topologyName: `${count} SUBSYSTEMS · STAR MESH BUS`,
+          roleBadges: ['ORCHESTRATOR', 'FIELD NODE', 'RELAY BUS', 'SYNC GATE', 'KNOWLEDGE HUB'],
+          normCoords: [
+            [0.0, 0.0],       // 01: Center Core Hub
+            [-0.86, -0.76],   // 02: Top-Left Node
+            [0.86, -0.76],    // 03: Top-Right Node
+            [-0.86, 0.76],    // 04: Bottom-Left Node
+            [0.86, 0.76]      // 05: Bottom-Right Node
+          ],
+          connections: [
+            { from: 0, to: 1, label: 'DISPATCH', primary: true },
+            { from: 0, to: 2, label: 'RELAY', primary: true },
+            { from: 0, to: 3, label: 'SYNC GATE', primary: true },
+            { from: 0, to: 4, label: 'GRAPH BUS', primary: true },
+            { from: 1, to: 3, label: 'TELEMETRY', primary: false },
+            { from: 2, to: 4, label: 'STATE FEED', primary: false },
+            { from: 3, to: 4, label: 'CONVERGE', primary: false }
+          ].filter(c => c.from < count && c.to < count)
+        };
+      }
+
+      if (arch === 'conveyor' || arch === 'turbine' || arch === 'refinery') {
+        return {
+          topologyName: `${count} SUBSYSTEMS · MULTI-STAGE PIPELINE`,
+          roleBadges: ['STAGE 01 · INGEST', 'STAGE 02 · CORE', 'STAGE 03 · VALIDATE', 'STAGE 04 · RUNTIME', 'STAGE 05 · DEPLOY'],
+          normCoords: [
+            [-0.90, -0.68],   // 01: Top-Left Intake
+            [0.0, -0.68],     // 02: Top-Center Mill / Turbine
+            [0.90, -0.68],    // 03: Top-Right Scoring / Bypass
+            [-0.46, 0.74],    // 04: Bottom-Left Runtime / Condenser
+            [0.54, 0.74]      // 05: Bottom-Right Deployment Output
+          ],
+          connections: [
+            { from: 0, to: 1, label: 'STREAM', primary: true },
+            { from: 1, to: 2, label: 'PROCESS', primary: true },
+            { from: 2, to: 3, label: 'COMPILE', primary: true },
+            { from: 3, to: 4, label: 'DELIVER', primary: true },
+            { from: 1, to: 3, label: 'DIRECT BUS', primary: false },
+            { from: 2, to: 4, label: 'FAST PATH', primary: false },
+            { from: 4, to: 0, label: 'FEEDBACK', primary: false }
+          ].filter(c => c.from < count && c.to < count)
+        };
+      }
+
+      // Default: Layered System Graph ('loom', 'differential', 'harmonic')
+      return {
+        topologyName: `${count} SUBSYSTEMS · LAYERED ARCHITECTURE`,
+        roleBadges: ['FOUNDATION', 'CORE ENGINE', 'AGENT LAYER', 'SYSTEM BUS', 'OUTPUT PORTAL'],
+        normCoords: [
+          [-0.90, 0.0],     // 01: Left Foundation / Intake
+          [0.0, -0.74],     // 02: Center-Top Core
+          [0.0, 0.74],      // 03: Center-Bottom Core
+          [0.90, -0.74],    // 04: Right-Top Bus / Shaft
+          [0.90, 0.74]      // 05: Right-Bottom Output Portal
+        ],
+        connections: [
+          { from: 0, to: 1, label: 'FORWARD', primary: true },
+          { from: 0, to: 2, label: 'STATE', primary: true },
+          { from: 1, to: 3, label: 'PROPAGATE', primary: true },
+          { from: 2, to: 4, label: 'SYNTHESIZE', primary: true },
+          { from: 3, to: 4, label: 'EMIT', primary: true },
+          { from: 1, to: 2, label: 'COUPLE', primary: false },
+          { from: 3, to: 1, label: 'GRADIENT', primary: false }
+        ].filter(c => c.from < count && c.to < count)
+      };
+    }
+
+    function buildDiagramSvgForEndeavor(item, index) {
+      if (!diagramSvgLayerEl) return;
+      diagramSvgLayerEl.innerHTML = '';
+      diagramEdges = [];
+
+      const spec = getEndeavorDiagramSpec(item, index);
+      if (diagramTopologyLabelEl) {
+        diagramTopologyLabelEl.textContent = spec.topologyName;
+      }
+
+      const ns = 'http://www.w3.org/2000/svg';
+      const defs = document.createElementNS(ns, 'defs');
+      defs.innerHTML = `
+        <marker id="cad-arrow-primary" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--text-primary)" />
+        </marker>
+        <marker id="cad-arrow-muted" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M 0 2 L 7.5 5 L 0 8 z" fill="var(--text-muted)" />
+        </marker>
+      `;
+      diagramSvgLayerEl.appendChild(defs);
+
+      spec.connections.forEach((conn, cIdx) => {
+        const g = document.createElementNS(ns, 'g');
+        g.setAttribute('class', 'diagram-edge');
+
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', conn.primary ? 'var(--text-primary)' : 'var(--text-muted)');
+        path.setAttribute('stroke-width', conn.primary ? '1.4' : '1.1');
+        if (!conn.primary) {
+          path.setAttribute('stroke-dasharray', '4 4');
+        }
+        path.setAttribute('marker-end', conn.primary ? 'url(#cad-arrow-primary)' : 'url(#cad-arrow-muted)');
+        g.appendChild(path);
+
+        const portStart = document.createElementNS(ns, 'rect');
+        portStart.setAttribute('width', '5');
+        portStart.setAttribute('height', '5');
+        portStart.setAttribute('rx', '1');
+        portStart.setAttribute('fill', 'var(--bg-primary)');
+        portStart.setAttribute('stroke', 'var(--text-primary)');
+        portStart.setAttribute('stroke-width', '1.2');
+        g.appendChild(portStart);
+
+        const portEnd = document.createElementNS(ns, 'rect');
+        portEnd.setAttribute('width', '5');
+        portEnd.setAttribute('height', '5');
+        portEnd.setAttribute('rx', '1');
+        portEnd.setAttribute('fill', 'var(--text-primary)');
+        g.appendChild(portEnd);
+
+        // Travelling signal pulse packet along the schematic line
+        const pkt = document.createElementNS(ns, 'rect');
+        pkt.setAttribute('width', conn.primary ? '6' : '4.5');
+        pkt.setAttribute('height', conn.primary ? '6' : '4.5');
+        pkt.setAttribute('rx', '1');
+        pkt.setAttribute('fill', 'var(--text-primary)');
+        g.appendChild(pkt);
+
+        // Midpoint schematic bus badge
+        const badgeG = document.createElementNS(ns, 'g');
+        const badgeBg = document.createElementNS(ns, 'rect');
+        const labelLen = (conn.label || '').length * 5.2 + 10;
+        badgeBg.setAttribute('width', String(labelLen));
+        badgeBg.setAttribute('height', '14');
+        badgeBg.setAttribute('x', String(-labelLen / 2));
+        badgeBg.setAttribute('y', '-7');
+        badgeBg.setAttribute('rx', '2');
+        badgeBg.setAttribute('fill', 'var(--bg-primary)');
+        badgeBg.setAttribute('stroke', 'var(--border-hairline)');
+        badgeBg.setAttribute('stroke-width', '1');
+
+        const badgeTxt = document.createElementNS(ns, 'text');
+        badgeTxt.setAttribute('text-anchor', 'middle');
+        badgeTxt.setAttribute('dominant-baseline', 'central');
+        badgeTxt.setAttribute('fill', 'var(--text-muted)');
+        badgeTxt.setAttribute('font-family', 'JetBrains Mono, monospace');
+        badgeTxt.setAttribute('font-size', '8px');
+        badgeTxt.setAttribute('letter-spacing', '0.06em');
+        badgeTxt.textContent = conn.label || 'LINK';
+
+        badgeG.appendChild(badgeBg);
+        badgeG.appendChild(badgeTxt);
+        g.appendChild(badgeG);
+
+        diagramSvgLayerEl.appendChild(g);
+
+        diagramEdges.push({
+          from: conn.from,
+          to: conn.to,
+          primary: conn.primary,
+          label: conn.label,
+          groupEl: g,
+          pathEl: path,
+          portStartEl: portStart,
+          portEndEl: portEnd,
+          pktEl: pkt,
+          badgeEl: badgeG,
+          badgeBgEl: badgeBg,
+          badgeTxtEl: badgeTxt,
+          t: (cIdx * 0.23) % 1,
+          speed: conn.primary ? 0.0042 : 0.0028
+        });
+      });
+    }
+
+    /**
+     * ============================================================================
+     * BUILD MACHINE + VIEWPORT-SAFE CALLOUT TAGS / DIAGRAM CARDS
+     * ============================================================================
+     */
+    function buildThreeMachineForEndeavor(index) {
+      clearCurrentMachine();
+      const item = ENDEAVORS[index];
+      const builders = [
+        buildQuantumSkyMachine,
+        buildHarvardConveyorMachine,
+        buildAvayaLoomMachine,
+        buildTinyTorchDifferentialMachine,
+        buildSocratioOrreryMachine,
+        buildFreelanceTurbineMachine,
+        buildStudyDuckRefineryMachine,
+        buildNeuroGraphMachine
+      ];
+
+      let builderFn = builders[index % builders.length];
+      if (item.archetype) {
+        const archIdx = MACHINE_ARCHETYPES.indexOf(item.archetype);
+        if (archIdx !== -1) builderFn = builders[archIdx];
+      }
+      builderFn(currentMachineGroup);
+
+      const diagramSpec = getEndeavorDiagramSpec(item, index);
+      buildDiagramSvgForEndeavor(item, index);
+
+      // Create interactive 3D node anchors and hybrid 3D-Callout / Diagram-Card DOM elements
+      const nodeMeshes = [];
+      const nodeTags = [];
+
+      (item.nodes || []).forEach((n, idx) => {
+        const anchorGeo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
+        const anchorMesh = new THREE.Mesh(anchorGeo, matAccent);
+        anchorMesh.position.set(...(n.pos || [0, 0, 0]));
+        currentMachineGroup.add(anchorMesh);
+        nodeMeshes.push(anchorMesh);
+
+        // Compute connected peer node IDs for the schematic card footer
+        const linkedPeers = diagramSpec.connections
+          .filter(c => c.from === idx || c.to === idx)
+          .map(c => {
+            const peerIdx = c.from === idx ? c.to : c.from;
+            const dir = c.from === idx ? '→' : '←';
+            return `${dir}0${peerIdx + 1}`;
+          });
+
+        const roleBadge = diagramSpec.roleBadges[idx % diagramSpec.roleBadges.length] || `PART 0${idx + 1}`;
+        const normCoord = diagramSpec.normCoords[idx % diagramSpec.normCoords.length] || [0, 0];
+
+        const tag = document.createElement('div');
+        tag.className = `callout-tag ${idx === selectedNodeIndex ? 'selected' : ''}`;
+        tag.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center min-w-0">
+              <span class="tag-step">${n.id}</span>
+              <span class="tag-title truncate">${n.name}</span>
+            </div>
+            <span class="diagram-port-badge">${roleBadge}</span>
+          </div>
+          <div class="diagram-node-body">
+            <p class="diagram-node-detail">${n.detail || item.hook || ''}</p>
+            <div class="diagram-node-footer">
+              <span>SYS_${n.id}</span>
+              <span>${linkedPeers.slice(0, 3).join(' ')}</span>
+            </div>
+          </div>
+        `;
+
+        const tagObj = {
+          el: tag,
+          pos3D: new THREE.Vector3(...(n.pos || [0, 0, 0])),
+          normDiag: normCoord,
+          dragOffset: { x: 0, y: 0 },
+          currentScreenX: window.innerWidth / 2,
+          currentScreenY: window.innerHeight / 2
+        };
+
+        // Support both clicking to inspect and dragging nodes in Diagram Mode
+        let nodeDragStart = null;
+        tag.addEventListener('mousedown', (e) => {
+          if (!isDiagramMode) return;
+          e.stopPropagation();
+          nodeDragStart = {
+            x: e.clientX,
+            y: e.clientY,
+            origX: tagObj.dragOffset.x,
+            origY: tagObj.dragOffset.y,
+            moved: false
+          };
+          const onMove = (me) => {
+            if (!nodeDragStart) return;
+            const dx = me.clientX - nodeDragStart.x;
+            const dy = me.clientY - nodeDragStart.y;
+            if (Math.hypot(dx, dy) > 4) nodeDragStart.moved = true;
+            tagObj.dragOffset.x = nodeDragStart.origX + dx;
+            tagObj.dragOffset.y = nodeDragStart.origY + dy;
+          };
+          const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            nodeDragStart = null;
+          };
+          window.addEventListener('mousemove', onMove);
+          window.addEventListener('mouseup', onUp);
+        });
+
+        tag.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectedNodeIndex = idx;
+          updateActiveNodeHighlight();
+          pulseBoost = 1.6;
+        });
+
+        calloutsContainerEl.appendChild(tag);
+        nodeTags.push(tagObj);
+      });
+
+      currentMachineGroup.userData.nodeMeshes = nodeMeshes;
+      currentMachineGroup.userData.nodeTags = nodeTags;
+      updateThreeSceneOpacity(1 - diagramTransition);
+      updateActiveNodeHighlight();
+    }
+
+    /**
+     * ============================================================================
+     * DIAGRAM MODE CONTROLLER (ANIMATED TRANSITION TO/FROM 3D MACHINE)
+     * ============================================================================
+     */
+    function setDiagramMode(enabled) {
+      const nextState = !!enabled;
+      if (isDiagramMode === nextState) return;
+      isDiagramMode = nextState;
+
+      document.body.classList.toggle('diagram-mode', isDiagramMode);
+
+      if (isDiagramMode) {
+        // Save current 3D orbit angle & smoothly align camera to front schematic plane while fading
+        savedMachineSpherical = { ...targetSpherical };
+        targetSpherical = { theta: 0.0, phi: Math.PI / 2 - 0.08, radius: 9.8 };
+        pulseBoost = 1.8;
+      } else {
+        // Smoothly restore 3D machine camera orbit and reset custom node drag offsets
+        targetSpherical = {
+          theta: savedMachineSpherical.theta || 0.68,
+          phi: savedMachineSpherical.phi || 1.08,
+          radius: savedMachineSpherical.radius || 8.6
+        };
+        if (currentMachineGroup && currentMachineGroup.userData.nodeTags) {
+          currentMachineGroup.userData.nodeTags.forEach(t => {
+            t.dragOffset.x = 0;
+            t.dragOffset.y = 0;
+          });
+        }
+        pulseBoost = 1.4;
+      }
+
+      // Sync top HUD button
+      if (btnDiagramModeEl) {
+        btnDiagramModeEl.classList.toggle('active', isDiagramMode);
+      }
+      if (btnDiagramIconEl) {
+        btnDiagramIconEl.textContent = isDiagramMode ? '←' : '◇';
+      }
+      if (btnDiagramLabelEl) {
+        btnDiagramLabelEl.textContent = isDiagramMode ? '3D Machine' : 'Diagram';
+      }
+
+      // Sync bottom CAD toolbar button
+      if (btnDiagramToolbarEl) {
+        btnDiagramToolbarEl.classList.toggle('active', isDiagramMode);
+        btnDiagramToolbarEl.textContent = isDiagramMode ? '← 3D MACHINE' : '◇ DIAGRAM';
+      }
+
+      // Sync top-left stage banner
+      if (diagramStageBannerEl) {
+        diagramStageBannerEl.classList.toggle('hidden', !isDiagramMode);
+        diagramStageBannerEl.classList.toggle('lg:flex', isDiagramMode);
+      }
+
+      // Compact the single-node inspector bar in Diagram Mode since all 5 cards display their full specs
+      if (nodeInspectorBarEl) {
+        nodeInspectorBarEl.classList.toggle('hidden', isDiagramMode);
+      }
+
+      // Update bottom-left hint text
+      if (stageHintTextEl) {
+        stageHintTextEl.textContent = isDiagramMode
+          ? 'SCHEMATIC DIAGRAM · CLICK OR DRAG NODES · ESC FOR 3D MACHINE'
+          : 'DRAG TO ORBIT · CLICK NODE TO INSPECT';
+      }
+    }
+
+    function toggleDiagramMode() {
+      setDiagramMode(!isDiagramMode);
+    }
+
+    if (btnDiagramModeEl) {
+      btnDiagramModeEl.addEventListener('click', toggleDiagramMode);
+    }
+    if (btnDiagramToolbarEl) {
+      btnDiagramToolbarEl.addEventListener('click', toggleDiagramMode);
+    }
+    if (btnReturnMachineEl) {
+      btnReturnMachineEl.addEventListener('click', () => setDiagramMode(false));
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea') return;
+      if (e.key === 'Escape' && isDiagramMode) {
+        setDiagramMode(false);
+      } else if ((e.key === 'd' || e.key === 'D') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (compilerModalEl && !compilerModalEl.classList.contains('hidden')) return;
+        toggleDiagramMode();
+      }
+    });
+
+    /**
+     * ============================================================================
+     * SELECT ENDEAVOR & UPDATE PROGRESSIVE DISCLOSURE UI
+     * ============================================================================
+     */
+    function selectEndeavor(index) {
+      activeEndeavorIndex = index;
+      selectedNodeIndex = 0;
+      const item = ENDEAVORS[index];
+
+      renderEndeavorList();
+
+      stageIndexEl.textContent = `FIG. ${item.num}`;
+      stageTitleEl.textContent = item.title;
+      stageHookEl.textContent = item.hook || item.summary || '';
+      stageRoleEl.textContent = item.role || '';
+      stagePeriodEl.textContent = item.period || '';
+      stageSummaryEl.textContent = item.summary || '';
+
+      // Populate metrics inside the deep-inspection drawer (strictly left-aligned)
+      const metricsEl = document.getElementById('stage-metrics');
+      metricsEl.innerHTML = (item.metrics || []).map(m => `
+        <div class="text-left flex flex-col items-start">
+          <div class="text-[9px] uppercase tracking-wider text-left" style="color: var(--text-muted);">${m.label}</div>
+          <div class="text-xs font-medium mt-0.5 text-left" style="color: var(--text-primary);">${m.value}</div>
+        </div>
+      `).join('');
+
+      updateActiveNodeHighlight();
+      buildThreeMachineForEndeavor(index);
+    }
+
+    /**
+     * ============================================================================
+     * CAMERA ORBIT CONTROLS (MOUSE & TOUCH) + RAYCASTING
+     * ============================================================================
+     */
+    let isDragging = false;
+    let pointerDownPos = { x: 0, y: 0 };
+    let prevPointerPos = { x: 0, y: 0 };
+    let spherical = { theta: 0.68, phi: 1.08, radius: 8.6 };
+    let targetSpherical = { theta: 0.68, phi: 1.08, radius: 8.6 };
+
+    function updateCameraFromSpherical() {
+      spherical.theta += (targetSpherical.theta - spherical.theta) * 0.1;
+      spherical.phi += (targetSpherical.phi - spherical.phi) * 0.1;
+      spherical.radius += (targetSpherical.radius - spherical.radius) * 0.1;
+
+      const x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+      const y = spherical.radius * Math.cos(spherical.phi);
+      const z = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+      camera.position.set(x, y, z);
+      camera.lookAt(0, 0, 0);
+    }
+
+    const raycaster = new THREE.Raycaster();
+    const mouseNDC = new THREE.Vector2();
+
+    canvasWrapper.addEventListener('mousedown', (e) => {
+      if (isDiagramMode) return;
+      isDragging = true;
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+      prevPointerPos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging || isDiagramMode) return;
+      const dx = e.clientX - prevPointerPos.x;
+      const dy = e.clientY - prevPointerPos.y;
+      targetSpherical.theta -= dx * 0.007;
+      targetSpherical.phi = Math.max(0.35, Math.min(Math.PI / 2 - 0.04, targetSpherical.phi - dy * 0.007));
+      prevPointerPos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      if (isDiagramMode) return;
+      const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+      if (dist < 6 && currentMachineGroup && currentMachineGroup.userData.nodeMeshes) {
+        const rect = canvas.getBoundingClientRect();
+        mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouseNDC, camera);
+        const hits = raycaster.intersectObjects(currentMachineGroup.userData.nodeMeshes, true);
+        if (hits.length > 0) {
+          const hitIndex = currentMachineGroup.userData.nodeMeshes.indexOf(hits[0].object);
+          if (hitIndex !== -1) {
+            selectedNodeIndex = hitIndex;
+            updateActiveNodeHighlight();
+            pulseBoost = 1.6;
+          }
+        }
+      }
+    });
+
+    canvasWrapper.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (isDiagramMode) return;
+      targetSpherical.radius = Math.max(5.2, Math.min(13.5, targetSpherical.radius + e.deltaY * 0.005));
+    }, { passive: false });
+
+    canvasWrapper.addEventListener('touchstart', (e) => {
+      if (isDiagramMode) return;
+      if (e.touches.length === 1) {
+        isDragging = true;
+        prevPointerPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    }, { passive: true });
+
+    canvasWrapper.addEventListener('touchmove', (e) => {
+      if (!isDragging || isDiagramMode || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - prevPointerPos.x;
+      const dy = e.touches[0].clientY - prevPointerPos.y;
+      targetSpherical.theta -= dx * 0.007;
+      targetSpherical.phi = Math.max(0.35, Math.min(Math.PI / 2 - 0.04, targetSpherical.phi - dy * 0.007));
+      prevPointerPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: true });
+
+    canvasWrapper.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    /**
+     * ============================================================================
+     * BOTTOM CAD TOOLBAR CONTROLS & DARK MODE PERSISTENCE
+     * ============================================================================
+     */
+    const btnPulse = document.getElementById('btn-pulse');
+    const btnExplode = document.getElementById('btn-explode');
+    const btnWireframe = document.getElementById('btn-wireframe');
+    const btnPolarity = document.getElementById('btn-polarity');
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    const themeToggleLabel = document.getElementById('theme-toggle-label');
+    const btnResetCam = document.getElementById('btn-reset-cam');
+
+    btnPulse.addEventListener('click', () => {
+      pulseBoost = 2.6;
+      btnPulse.classList.add('active');
+      setTimeout(() => btnPulse.classList.remove('active'), 600);
+    });
+
+    btnExplode.addEventListener('click', () => {
+      isExploded = !isExploded;
+      btnExplode.classList.toggle('active', isExploded);
+    });
+
+    btnWireframe.addEventListener('click', () => {
+      isWireframe = !isWireframe;
+      btnWireframe.classList.toggle('active', isWireframe);
+      document.body.classList.toggle('wireframe-mode', isWireframe);
+      initMaterials();
+      buildThreeMachineForEndeavor(activeEndeavorIndex);
+    });
+
+    // Sync theme preference across subsequent loads using window.name & Firestore cloud preference
+    function saveThemePreference(isDark) {
+      try {
+        const currentWindowMeta = window.name && window.name.startsWith('{') ? JSON.parse(window.name) : {};
+        currentWindowMeta.kineticDarkPolarity = isDark ? 1 : 0;
+        window.name = JSON.stringify(currentWindowMeta);
+      } catch (_) {}
+      if (typeof window.__saveCloudThemePreference === 'function') {
+        window.__saveCloudThemePreference(isDark);
+      }
+    }
+
+    function readInitialWindowThemePreference() {
+      try {
+        if (window.name && window.name.startsWith('{')) {
+          const parsed = JSON.parse(window.name);
+          if (parsed.kineticDarkPolarity !== undefined) {
+            return parsed.kineticDarkPolarity === 1;
+          }
+        }
+      } catch (_) {}
+      return undefined;
+    }
+
+    function applyPolarity(isDark, persistPreference = true) {
+      isDarkPolarity = !!isDark;
+      document.body.classList.toggle('dark-polarity', isDarkPolarity);
+      if (btnPolarity) btnPolarity.classList.toggle('active', isDarkPolarity);
+      if (btnThemeToggle) btnThemeToggle.classList.toggle('active', isDarkPolarity);
+      if (themeToggleLabel) {
+        themeToggleLabel.textContent = isDarkPolarity ? 'LIGHT MODE' : 'DARK MODE';
+      } else if (btnThemeToggle) {
+        btnThemeToggle.textContent = isDarkPolarity ? 'LIGHT MODE' : 'DARK MODE';
+      }
+      initMaterials();
+      buildReferenceFloor();
+      buildThreeMachineForEndeavor(activeEndeavorIndex);
+      if (persistPreference) {
+        saveThemePreference(isDarkPolarity);
+      }
+    }
+
+    if (btnThemeToggle) {
+      btnThemeToggle.addEventListener('click', () => {
+        applyPolarity(!isDarkPolarity, true);
+      });
+    }
+
+    if (btnPolarity) {
+      btnPolarity.addEventListener('click', () => {
+        applyPolarity(!isDarkPolarity, true);
+      });
+    }
+
+    btnResetCam.addEventListener('click', () => {
+      if (isDiagramMode && currentMachineGroup && currentMachineGroup.userData.nodeTags) {
+        currentMachineGroup.userData.nodeTags.forEach(t => {
+          t.dragOffset.x = 0;
+          t.dragOffset.y = 0;
+        });
+      } else {
+        targetSpherical = { theta: 0.68, phi: 1.08, radius: 8.6 };
+      }
+    });
+
+    /**
+     * ============================================================================
+     * RESIZE & ANIMATION LOOP (3D MACHINE + SCHEMATIC DIAGRAM INTERPOLATION)
+     * ============================================================================
+     */
+    function onResize() {
+      const w = canvasWrapper.clientWidth;
+      const h = canvasWrapper.clientHeight;
+      if (w === 0 || h === 0) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      if (currentMachineGroup) {
+        currentMachineGroup.position.x = window.innerWidth >= 768 ? 0.35 : 0;
+      }
+    }
+    window.addEventListener('resize', onResize);
+
+    function evalCubicBezier(p0, p1, p2, p3, t) {
+      const u = 1 - t;
+      const tt = t * t;
+      const uu = u * u;
+      const uuu = uu * u;
+      const ttt = tt * t;
+      return uuu * p0 + 3 * uu * t * p1 + 3 * u * tt * p2 + ttt * p3;
+    }
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      // Smoothly animate diagramTransition (0 = 3D Machine, 1 = Schematic Diagram)
+      const targetDiag = isDiagramMode ? 1 : 0;
+      diagramTransition += (targetDiag - diagramTransition) * 0.10;
+      if (Math.abs(targetDiag - diagramTransition) < 0.001) {
+        diagramTransition = targetDiag;
+      }
+
+      // Fade 3D machine & reference floor out/in smoothly during diagram transition
+      const machineAlpha = 1 - diagramTransition;
+      updateThreeSceneOpacity(machineAlpha);
+
+      if (diagramBackdropEl) {
+        diagramBackdropEl.style.opacity = String((diagramTransition * (isDarkPolarity ? 0.45 : 0.6)).toFixed(3));
+      }
+      if (diagramSvgLayerEl) {
+        const svgAlpha = Math.max(0, Math.min(1, (diagramTransition - 0.08) / 0.82));
+        diagramSvgLayerEl.style.opacity = String(svgAlpha.toFixed(3));
+      }
+
+      if (!isDragging && !isDiagramMode) {
+        targetSpherical.theta += 0.0012;
+      }
+      updateCameraFromSpherical();
+
+      pulseBoost = Math.max(0, pulseBoost - 0.025);
+      const speedMult = 1 + pulseBoost;
+
+      if (machineAlpha > 0.01) {
+        dynamicUpdaters.forEach(fn => fn(elapsed, speedMult));
+      }
+
+      // Smoothly interpolate exploded view offsets (+ radial expansion during diagram transition)
+      if (currentMachineGroup && machineAlpha > 0.01) {
+        const explodeFactor = (isExploded ? 1.0 : 0.0) + diagramTransition * 0.85;
+        currentMachineGroup.children.forEach(child => {
+          if (child.userData && child.userData.basePos && child.userData.explodeVec) {
+            const target = child.userData.basePos.clone();
+            if (explodeFactor > 0.001) {
+              target.addScaledVector(child.userData.explodeVec, explodeFactor);
+            }
+            child.position.lerp(target, 0.09);
+          }
+        });
+      }
+
+      // Advance 3D circuit energy packets when visible
+      if (machineAlpha > 0.01) {
+        activeEnergyPackets.forEach(pkt => {
+          pkt.t = (pkt.t + pkt.speed * speedMult) % 1;
+          const pos = pkt.curve.getPointAt(pkt.t);
+          pkt.mesh.position.copy(pos);
+          const s = 1 + pulseBoost * 0.45;
+          pkt.mesh.scale.set(s, s, s);
+        });
+      }
+
+      // Project 3D node coordinates & interpolate into 2D Schematic Diagram positions
+      if (currentMachineGroup && currentMachineGroup.userData.nodeTags) {
+        const w = canvasWrapper.clientWidth;
+        const h = canvasWrapper.clientHeight;
+        const hudCard = document.getElementById('top-hud-card');
+        const hudRect = hudCard ? hudCard.getBoundingClientRect() : null;
+        const wrapperRect = canvasWrapper.getBoundingClientRect();
+
+        // Keep labels/cards clear of the left sidebar on desktop
+        const sidebarEl = document.querySelector('aside');
+        const sidebarRight = (window.innerWidth >= 768 && sidebarEl)
+          ? (sidebarEl.getBoundingClientRect().right - wrapperRect.left)
+          : 0;
+
+        // Compute safe schematic diagram stage bounds (below top header, above bottom controls)
+        const stageTopPad = window.innerWidth >= 768 ? 142 : (h * 0.42 + 95);
+        const stageBottomPad = h - 72;
+        const stageCenterX = sidebarRight + (w - sidebarRight) * 0.5;
+        const stageCenterY = (stageTopPad + stageBottomPad) * 0.5;
+        const explodeSpread = isExploded ? 1.1 : 1.0;
+        const spanX = Math.max(110, (w - sidebarRight) * 0.34 * explodeSpread);
+        const spanY = Math.max(75, (stageBottomPad - stageTopPad) * 0.38 * explodeSpread);
+
+        const nodeTags = currentMachineGroup.userData.nodeTags;
+
+        nodeTags.forEach(tagObj => {
+          const worldVec = tagObj.pos3D.clone();
+          worldVec.add(currentMachineGroup.position);
+          worldVec.project(camera);
+
+          const tagW = tagObj.el.offsetWidth || 160;
+          const tagH = tagObj.el.offsetHeight || 28;
+          const padX = tagW / 2 + 16;
+          const padY = tagH / 2 + 14;
+
+          // 1. 3D Machine projected screen position
+          let sx3D = (worldVec.x * 0.5 + 0.5) * w;
+          let sy3D = (-(worldVec.y * 0.5) + 0.5) * h;
+
+          sx3D = Math.max(sidebarRight + padX, Math.min(w - padX, sx3D));
+          sy3D = Math.max(padY, Math.min(h - 56, sy3D));
+
+          if (hudRect && diagramTransition < 0.5) {
+            const localRight = hudRect.right - wrapperRect.left;
+            const localLeft = hudRect.left - wrapperRect.left;
+            const localBottom = hudRect.bottom - wrapperRect.top;
+            if (sx3D + tagW / 2 > localLeft - 8 && sx3D - tagW / 2 < localRight + 8 && sy3D - tagH / 2 < localBottom + 10) {
+              sy3D = Math.min(h - 56, localBottom + tagH / 2 + 12);
+            }
+          }
+
+          // 2. 2D Schematic Diagram target screen position
+          let sxDiag = stageCenterX + tagObj.normDiag[0] * spanX + tagObj.dragOffset.x;
+          let syDiag = stageCenterY + tagObj.normDiag[1] * spanY + tagObj.dragOffset.y;
+
+          sxDiag = Math.max(sidebarRight + padX, Math.min(w - padX, sxDiag));
+          syDiag = Math.max(stageTopPad, Math.min(h - padY - 46, syDiag));
+
+          // 3. Smoothly interpolate between 3D Machine and 2D Diagram positions
+          const sx = sx3D + (sxDiag - sx3D) * diagramTransition;
+          const sy = sy3D + (syDiag - sy3D) * diagramTransition;
+
+          tagObj.currentScreenX = sx;
+          tagObj.currentScreenY = sy;
+          tagObj.halfW = tagW * 0.5;
+          tagObj.halfH = tagH * 0.5;
+
+          if (worldVec.z > 1 && diagramTransition < 0.05) {
+            tagObj.el.style.display = 'none';
+          } else {
+            tagObj.el.style.display = 'block';
+            tagObj.el.style.left = `${sx}px`;
+            tagObj.el.style.top = `${sy}px`;
+          }
+        });
+
+        // Update SVG schematic connection lines and flowing signal packets
+        if (diagramTransition > 0.02 && diagramEdges.length > 0) {
+          diagramEdges.forEach(edge => {
+            const nA = nodeTags[edge.from];
+            const nB = nodeTags[edge.to];
+            if (!nA || !nB) return;
+
+            const dx = nB.currentScreenX - nA.currentScreenX;
+            const dy = nB.currentScreenY - nA.currentScreenY;
+            const isConnectedToSelected = (edge.from === selectedNodeIndex || edge.to === selectedNodeIndex);
+
+            // Compute clean exit and entry ports on the edges of the node cards
+            let x1 = nA.currentScreenX;
+            let y1 = nA.currentScreenY;
+            let x2 = nB.currentScreenX;
+            let y2 = nB.currentScreenY;
+            let cx1, cy1, cx2, cy2;
+
+            const portScale = 0.35 + 0.65 * diagramTransition;
+            const hwA = (nA.halfW || 80) * portScale;
+            const hhA = (nA.halfH || 24) * portScale;
+            const hwB = (nB.halfW || 80) * portScale;
+            const hhB = (nB.halfH || 24) * portScale;
+
+            if (Math.abs(dx) > Math.abs(dy) * 0.95) {
+              const signX = dx >= 0 ? 1 : -1;
+              x1 += signX * hwA;
+              x2 -= signX * hwB;
+              const bend = (x2 - x1) * 0.5;
+              cx1 = x1 + bend;
+              cy1 = y1;
+              cx2 = x2 - bend;
+              cy2 = y2;
+            } else {
+              const signY = dy >= 0 ? 1 : -1;
+              y1 += signY * hhA;
+              y2 -= signY * hhB;
+              const bend = (y2 - y1) * 0.5;
+              cx1 = x1;
+              cy1 = y1 + bend;
+              cx2 = x2;
+              cy2 = y2 - bend;
+            }
+
+            const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${cx1.toFixed(1)} ${cy1.toFixed(1)}, ${cx2.toFixed(1)} ${cy2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+            edge.pathEl.setAttribute('d', d);
+
+            // Highlight edges linked to the currently selected node
+            const strokeAlpha = isConnectedToSelected ? 0.92 : (edge.primary ? 0.38 : 0.24);
+            edge.pathEl.setAttribute('opacity', String(strokeAlpha));
+            edge.pathEl.setAttribute('stroke-width', isConnectedToSelected ? '1.9' : (edge.primary ? '1.35' : '1.05'));
+            edge.pathEl.setAttribute('stroke', isConnectedToSelected ? 'var(--text-primary)' : (edge.primary ? 'var(--text-primary)' : 'var(--text-muted)'));
+
+            edge.portStartEl.setAttribute('x', String((x1 - 2.5).toFixed(1)));
+            edge.portStartEl.setAttribute('y', String((y1 - 2.5).toFixed(1)));
+            edge.portEndEl.setAttribute('x', String((x2 - 2.5).toFixed(1)));
+            edge.portEndEl.setAttribute('y', String((y2 - 2.5).toFixed(1)));
+
+            // Advance signal packet along the cubic bezier curve
+            const edgeSpeed = edge.speed * speedMult * (isConnectedToSelected ? 1.45 : 1.0);
+            edge.t = (edge.t + edgeSpeed) % 1;
+            const px = evalCubicBezier(x1, cx1, cx2, x2, edge.t);
+            const py = evalCubicBezier(y1, cy1, cy2, y2, edge.t);
+            const pktSize = isConnectedToSelected ? 7 : (edge.primary ? 5.5 : 4.5);
+            edge.pktEl.setAttribute('width', String(pktSize));
+            edge.pktEl.setAttribute('height', String(pktSize));
+            edge.pktEl.setAttribute('x', String((px - pktSize / 2).toFixed(1)));
+            edge.pktEl.setAttribute('y', String((py - pktSize / 2).toFixed(1)));
+            edge.pktEl.setAttribute('opacity', isConnectedToSelected ? '1' : '0.68');
+
+            // Position midpoint schematic bus badge
+            const mx = evalCubicBezier(x1, cx1, cx2, x2, 0.5);
+            const my = evalCubicBezier(y1, cy1, cy2, y2, 0.5);
+            edge.badgeEl.setAttribute('transform', `translate(${mx.toFixed(1)}, ${my.toFixed(1)})`);
+            edge.badgeEl.setAttribute('opacity', String(Math.max(0, (diagramTransition - 0.45) / 0.55) * (isConnectedToSelected ? 1 : 0.78)));
+            edge.badgeBgEl.setAttribute('stroke', isConnectedToSelected ? 'var(--border-strong)' : 'var(--border-hairline)');
+            edge.badgeTxtEl.setAttribute('fill', isConnectedToSelected ? 'var(--text-primary)' : 'var(--text-muted)');
+          });
+        }
+      }
+
+      if (machineAlpha > 0.008) {
+        renderer.render(scene, camera);
+      } else {
+        renderer.clear();
+      }
+    }
+
+    /**
+     * ============================================================================
+     * RESUME-TO-MACHINE COMPILER (PDF PARSING + AI / DETERMINISTIC FALLBACK)
+     * ============================================================================
+     */
+    const compilerModalEl = document.getElementById('compiler-modal');
+    const btnOpenCompilerEl = document.getElementById('btn-open-compiler');
+    const btnCloseCompilerEl = document.getElementById('btn-close-compiler');
+    const btnCancelCompilerEl = document.getElementById('btn-cancel-compiler');
+    const btnRunCompilerEl = document.getElementById('btn-run-compiler');
+    const btnLoadSampleEl = document.getElementById('btn-load-sample-resume');
+    const btnResetKaiEl = document.getElementById('btn-reset-kai');
+    const resumeTextareaEl = document.getElementById('resume-textarea');
+    const resumeFileInputEl = document.getElementById('resume-file-input');
+    const compilerStatusMsgEl = document.getElementById('compiler-status-msg');
+    const activeProfileLabelEl = document.getElementById('active-profile-label');
+    const activeProfileMetaEl = document.getElementById('active-profile-meta');
+    const activeProfileSubmetaEl = document.getElementById('active-profile-submeta');
+
+    const DEFAULT_KAI_IDENTITY = {
+      name: 'Kai Kleinbard',
+      meta: 'Principal AI Engineer',
+      submeta: 'Full Stack · Product · Harvard / UPenn / GT'
+    };
+
+    function setCandidateHeader(name, meta, submeta) {
+      if (activeProfileLabelEl) activeProfileLabelEl.textContent = name || DEFAULT_KAI_IDENTITY.name;
+      if (activeProfileMetaEl) activeProfileMetaEl.textContent = meta || DEFAULT_KAI_IDENTITY.meta;
+      if (activeProfileSubmetaEl) activeProfileSubmetaEl.textContent = submeta || '';
+    }
+
+    const SAMPLE_ROBOTICS_RESUME = `Dr. Elena Vance — Principal Autonomous Systems & Robotics Architect
+
+2024 - Present | Orbital Swarm Logistics | VP of Autonomous Flight
+- Architected decentralized collision-avoidance mesh for 400+ LEO micro-satellites
+- Reduced orbital station-keeping thruster fuel burn by 38% using reinforcement learning
+- Built real-time Kalman sensor fusion pipeline in Rust processing 120k telemetry frames/sec
+
+2021 - 2024 | Boston Bionics Lab | Lead Neuromorphic Controls Engineer
+- Designed hydraulic quadruped locomotion controller capable of traversing 45-degree rubble inclines
+- Deployed spiking neural networks onto custom FPGA silicon cutting actuator latency to 1.8ms
+- Open-sourced Sim2Real physics benchmark suite earning 6,500+ GitHub stars
+
+2018 - 2021 | DeepSea Submersibles | Senior Perception & Sonar Engineer
+- Built synthetic aperture sonar 3D reconstruction engine for autonomous trench mapping at 4,000m depth
+- Trained acoustic anomaly transformer model achieving 94% pipeline defect detection accuracy`;
+
+    function openCompilerModal() {
+      compilerModalEl.classList.remove('hidden');
+      compilerModalEl.classList.add('flex');
+    }
+
+    function closeCompilerModal() {
+      compilerModalEl.classList.add('hidden');
+      compilerModalEl.classList.remove('flex');
+    }
+
+    if (btnOpenCompilerEl) btnOpenCompilerEl.addEventListener('click', openCompilerModal);
+    if (btnCloseCompilerEl) btnCloseCompilerEl.addEventListener('click', closeCompilerModal);
+    if (btnCancelCompilerEl) btnCancelCompilerEl.addEventListener('click', closeCompilerModal);
+
+    if (btnLoadSampleEl) {
+      btnLoadSampleEl.addEventListener('click', () => {
+        resumeTextareaEl.value = SAMPLE_ROBOTICS_RESUME;
+        compilerStatusMsgEl.textContent = 'SAMPLE ROBOTICS RESUME LOADED';
+      });
+    }
+
+    if (btnResetKaiEl) {
+      btnResetKaiEl.addEventListener('click', () => {
+        ENDEAVORS = [...KAI_ENDEAVORS];
+        currentResumeRawText = '';
+        setCandidateHeader(DEFAULT_KAI_IDENTITY.name, DEFAULT_KAI_IDENTITY.meta, DEFAULT_KAI_IDENTITY.submeta);
+        btnResetKaiEl.classList.add('hidden');
+        selectEndeavor(0);
+      });
+    }
+
+    // Extract text from uploaded PDF using PDF.js
+    async function extractTextFromPDF(file) {
+      if (!window.pdfjsLib) {
+        throw new Error('PDF.js library not available');
+      }
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const content = await page.getTextContent();
+        const strings = content.items.map(item => item.str);
+        fullText += strings.join(' ') + '\n\n';
+      }
+      return fullText.trim();
+    }
+
+    if (resumeFileInputEl) {
+      resumeFileInputEl.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+        if (isPdf) {
+          compilerStatusMsgEl.textContent = `PARSING PDF: ${file.name.toUpperCase()}...`;
+          try {
+            const extracted = await extractTextFromPDF(file);
+            resumeTextareaEl.value = extracted;
+            compilerStatusMsgEl.textContent = `EXTRACTED PDF (${file.name})`;
+          } catch (err) {
+            compilerStatusMsgEl.textContent = 'PDF PARSE ERROR — TRY PASTING TEXT';
+          }
+        } else {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            resumeTextareaEl.value = String(ev.target.result || '');
+            compilerStatusMsgEl.textContent = `LOADED FILE: ${file.name.toUpperCase()}`;
+          };
+          reader.readAsText(file);
+        }
+      });
+    }
+
+    const DEFAULT_NODE_COORDS = [
+      [-2.1, 0.9, 0.5],
+      [0, 1.2, 0],
+      [-0.8, -0.8, 0.7],
+      [1.7, 0.7, -0.5],
+      [2.1, -0.8, 0.5]
+    ];
+
+    function compileResumeDeterministic(rawText) {
+      const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const firstLine = lines[0] || 'Custom Resume';
+      const firstLineParts = firstLine.split(/[|—\-–]/).map(s => s.trim()).filter(Boolean);
+      const candidateName = (firstLineParts[0] || 'Custom Engineer').slice(0, 32);
+      const candidateMeta = (firstLineParts[1] || lines[1] || 'Principal Engineer').slice(0, 28);
+
+      const chunks = rawText
+        .split(/\n\s*\n+/)
+        .map(c => c.trim())
+        .filter(c => c.length > 25);
+
+      const blocks = chunks.length >= 2 ? chunks.slice(0, 8) : lines.reduce((acc, line, idx) => {
+        const groupIdx = Math.floor(idx / 4);
+        acc[groupIdx] = (acc[groupIdx] ? acc[groupIdx] + '\n' : '') + line;
+        return acc;
+      }, []).slice(0, 8);
+
+      const compiled = blocks.map((block, idx) => {
+        const bLines = block.split(/\r?\n/).map(s => s.replace(/^[-•*]\s*/, '').trim()).filter(Boolean);
+        const header = bLines[0] || `Endeavor ${idx + 1}`;
+        const parts = header.split(/[|—–]/).map(s => s.trim()).filter(Boolean);
+
+        const dateMatch = block.match(/\b(20\d\d\s*[-–]\s*(?:20\d\d|Present|Current)|20\d\d)\b/i);
+        const period = dateMatch ? dateMatch[0] : (parts[0] && /\d/.test(parts[0]) ? parts[0] : 'Active');
+        const title = (parts.length > 1 ? parts[1] : parts[0]).slice(0, 44);
+        const role = (parts.length > 2 ? parts[2] : (bLines[1] || 'Lead Architect')).slice(0, 44);
+        const indexPhrase = role.split(/\s+/).slice(0, 4).join(' ');
+
+        const bulletLines = bLines.slice(1);
+        const hook = (bulletLines[0] || header).slice(0, 135);
+        const summary = bulletLines.join(' ').slice(0, 260) || header;
+
+        const rawPhrases = [];
+        bulletLines.forEach(bl => {
+          bl.split(/[.;,]/).forEach(seg => {
+            const clean = seg.trim();
+            if (clean.length >= 4) rawPhrases.push(clean);
+          });
+        });
+        while (rawPhrases.length < 5) {
+          rawPhrases.push(`Subsystem Module 0${rawPhrases.length + 1}`);
+        }
+
+        const nodes = rawPhrases.slice(0, 5).map((phrase, nIdx) => {
+          const words = phrase.split(/\s+/).slice(0, 4).join(' ');
+          return {
+            id: String(nIdx + 1).padStart(2, '0'),
+            name: words.slice(0, 32),
+            detail: phrase.slice(0, 130),
+            pos: DEFAULT_NODE_COORDS[nIdx]
+          };
+        });
+
+        const metricMatches = block.match(/\b\d+[kKmM%+xX]*\b/g) || ['100%', '3x', 'Live'];
+        const metrics = [
+          { label: 'Key Metric', value: metricMatches[0] || 'Active' },
+          { label: 'Scale / Gain', value: metricMatches[1] || 'Production' },
+          { label: 'Architecture', value: MACHINE_ARCHETYPES[idx % MACHINE_ARCHETYPES.length].toUpperCase() }
+        ];
+
+        return {
+          id: `custom-${idx}`,
+          num: String(idx + 1).padStart(2, '0'),
+          title,
+          indexPhrase,
+          hook,
+          role,
+          period,
+          summary,
+          archetype: MACHINE_ARCHETYPES[idx % MACHINE_ARCHETYPES.length],
+          metrics,
+          nodes
+        };
+      });
+
+      const candidateSubmeta = `${compiled.length} Endeavors · Interactive Systems`;
+      return { candidateName, candidateMeta, candidateSubmeta, endeavors: compiled };
+    }
+
+    async function compileResumeWithAI(rawText) {
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const systemPrompt = `You convert a user's resume into an array of interactive 3D kinetic machines following progressive disclosure.
+Extract the candidate's name, a short 2-3 word headline title (candidateMeta, e.g. "Principal AI Engineer"), and a concise sub-metadata row (candidateSubmeta, e.g. "Full Stack · Robotics · MIT" or top 3 domains/schools, max 42 chars).
+Also extract up to 8 distinct projects, roles, or endeavors from the resume.
+For each endeavor:
+- title: Concise project or company name (max 34 chars).
+- indexPhrase: Very short 3-4 word phrase for the sidebar index (e.g. "Custom AI for websites").
+- hook: One clear opening sentence explaining what the project is and why it matters (max 135 chars).
+- role: Role title.
+- period: Dates.
+- summary: 1-2 sentence deeper context with collaborators and contributions.
+- archetype: Pick one of ["gyroscope","conveyor","loom","differential","orrery","turbine","refinery","harmonic"].
+- metrics: Exactly 3 concrete metrics/technologies from the resume ({label, value}).
+- nodes: Exactly 5 actual components/technologies from that project. Each node has {name (2-4 words, sentence case, max 30 chars), detail (1 sentence explaining what that component did in the resume)}.`;
+
+      const payload = {
+        contents: [{ parts: [{ text: rawText }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              candidateName: { type: "STRING" },
+              candidateMeta: { type: "STRING" },
+              candidateSubmeta: { type: "STRING" },
+              endeavors: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    title: { type: "STRING" },
+                    indexPhrase: { type: "STRING" },
+                    hook: { type: "STRING" },
+                    role: { type: "STRING" },
+                    period: { type: "STRING" },
+                    summary: { type: "STRING" },
+                    archetype: { type: "STRING" },
+                    metrics: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          label: { type: "STRING" },
+                          value: { type: "STRING" }
+                        }
+                      }
+                    },
+                    nodes: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          name: { type: "STRING" },
+                          detail: { type: "STRING" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Gemini API unavailable');
+      const data = await res.json();
+      const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!jsonText) throw new Error('Empty AI response');
+
+      const parsed = JSON.parse(jsonText);
+      if (!parsed.endeavors || !parsed.endeavors.length) throw new Error('No endeavors parsed');
+
+      const normalized = parsed.endeavors.slice(0, 8).map((e, idx) => ({
+        id: `ai-${idx}`,
+        num: String(idx + 1).padStart(2, '0'),
+        title: e.title || `Endeavor 0${idx + 1}`,
+        indexPhrase: e.indexPhrase || e.role || 'Interactive system',
+        hook: e.hook || e.summary || '',
+        role: e.role || 'Engineer',
+        period: e.period || 'Active',
+        summary: e.summary || e.hook || '',
+        archetype: MACHINE_ARCHETYPES.includes(e.archetype) ? e.archetype : MACHINE_ARCHETYPES[idx % MACHINE_ARCHETYPES.length],
+        metrics: (e.metrics || []).slice(0, 3),
+        nodes: (e.nodes || []).slice(0, 5).map((n, nIdx) => ({
+          id: String(nIdx + 1).padStart(2, '0'),
+          name: String(n.name || `Module 0${nIdx + 1}`).slice(0, 32),
+          detail: String(n.detail || e.hook || ''),
+          pos: DEFAULT_NODE_COORDS[nIdx % DEFAULT_NODE_COORDS.length]
+        }))
+      }));
+
+      return {
+        candidateName: parsed.candidateName || 'Compiled Resume',
+        candidateMeta: parsed.candidateMeta || normalized[0]?.role || 'Principal Engineer',
+        candidateSubmeta: parsed.candidateSubmeta || `${normalized.length} Endeavors`,
+        endeavors: normalized
+      };
+    }
+
+    async function compileResumeTextToMachines(rawText) {
+      let result = null;
+      try {
+        result = await compileResumeWithAI(rawText);
+      } catch (_) {
+        result = compileResumeDeterministic(rawText);
+      }
+      return result;
+    }
+
+    if (btnRunCompilerEl) {
+      btnRunCompilerEl.addEventListener('click', async () => {
+        const rawText = resumeTextareaEl.value.trim();
+        if (!rawText) {
+          compilerStatusMsgEl.textContent = 'PLEASE PASTE A RESUME OR UPLOAD A PDF FIRST';
+          return;
+        }
+
+        btnRunCompilerEl.disabled = true;
+        btnRunCompilerEl.textContent = 'COMPILING 3D MACHINES...';
+        compilerStatusMsgEl.textContent = 'EXTRACTING ENDEAVORS & NODES...';
+
+        const result = await compileResumeTextToMachines(rawText);
+        if (result && result.endeavors && result.endeavors.length > 0) {
+          ENDEAVORS = result.endeavors;
+          currentResumeRawText = rawText;
+          setCandidateHeader(result.candidateName, result.candidateMeta, result.candidateSubmeta);
+          if (btnResetKaiEl) btnResetKaiEl.classList.remove('hidden');
+          selectEndeavor(0);
+          closeCompilerModal();
+        }
+
+        btnRunCompilerEl.disabled = false;
+        btnRunCompilerEl.textContent = 'COMPILE TO 3D MACHINES →';
+      });
+    }
+
+    /**
+     * ============================================================================
+     * STANDALONE HTML DOWNLOAD & COMPRESSED ZERO-STATE SHARE LINK
+     * ============================================================================
+     */
+    const btnDownloadHtml = document.getElementById('btn-download-html');
+    const btnShareLink = document.getElementById('btn-share-link');
+    const shareFeedbackTray = document.getElementById('share-feedback-tray');
+    const shareFeedbackMsg = document.getElementById('share-feedback-msg');
+    const shareUrlInput = document.getElementById('share-url-input');
+    const btnCloseShareTray = document.getElementById('btn-close-share-tray');
+
+    function copyTextToClipboard(text) {
+      const tempInput = document.createElement('textarea');
+      tempInput.value = text;
+      tempInput.style.position = 'fixed';
+      tempInput.style.opacity = '0';
+      document.body.appendChild(tempInput);
+      tempInput.focus();
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+      } catch (_) {}
+      document.body.removeChild(tempInput);
+    }
+
+    async function compressToUrlSafeBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      if (typeof CompressionStream !== 'undefined') {
+        const cs = new CompressionStream('deflate-raw');
+        const writer = cs.writable.getWriter();
+        writer.write(bytes);
+        writer.close();
+        const compressedBuf = await new Response(cs.readable).arrayBuffer();
+        const outBytes = new Uint8Array(compressedBuf);
+        let binary = '';
+        for (let i = 0; i < outBytes.length; i++) {
+          binary += String.fromCharCode(outBytes[i]);
+        }
+        return 'z.' + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return 'u.' + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    async function decompressFromUrlSafeBase64(token) {
+      const isCompressed = token.startsWith('z.');
+      const rawB64 = (token.startsWith('z.') || token.startsWith('u.')) ? token.slice(2) : token;
+      const b64 = rawB64.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
+      const binary = atob(b64 + pad);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      if (isCompressed && typeof DecompressionStream !== 'undefined') {
+        const ds = new DecompressionStream('deflate-raw');
+        const writer = ds.writable.getWriter();
+        writer.write(bytes);
+        writer.close();
+        const decompressedBuf = await new Response(ds.readable).arrayBuffer();
+        return new TextDecoder().decode(decompressedBuf);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+
+    // Download Standalone HTML (Preloads current resume & dark/light mode, strips out compiler UI)
+    if (btnDownloadHtml) {
+      btnDownloadHtml.addEventListener('click', () => {
+        const candidateName = activeProfileLabelEl.textContent.trim() || 'Interactive Resume';
+        const candidateMeta = activeProfileMetaEl ? activeProfileMetaEl.textContent.trim() : '';
+        const candidateSubmeta = activeProfileSubmetaEl ? activeProfileSubmetaEl.textContent.trim() : '';
+        const exportPayload = {
+          candidateName,
+          candidateMeta,
+          candidateSubmeta,
+          endeavors: ENDEAVORS,
+          rawText: currentResumeRawText,
+          isDarkPolarity
+        };
+
+        const docClone = document.documentElement.cloneNode(true);
+        const cloneToolbar = docClone.querySelector('#compiler-toolbar-row');
+        if (cloneToolbar) cloneToolbar.remove();
+        const cloneModal = docClone.querySelector('#compiler-modal');
+        if (cloneModal) cloneModal.remove();
+        const cloneTray = docClone.querySelector('#share-feedback-tray');
+        if (cloneTray) cloneTray.classList.add('hidden');
+        const cloneCallouts = docClone.querySelector('#callouts-container');
+        if (cloneCallouts) cloneCallouts.innerHTML = '';
+        const cloneSvg = docClone.querySelector('#diagram-svg-layer');
+        if (cloneSvg) cloneSvg.innerHTML = '';
+        const cloneBody = docClone.querySelector('body');
+        if (cloneBody) cloneBody.classList.remove('diagram-mode');
+
+        const preloadScript = document.createElement('script');
+        preloadScript.textContent = `window.__EXPORTED_RESUME_STATE__ = ${JSON.stringify(exportPayload).replace(/<\/script>/gi, '<\\/script>')};`;
+        const headEl = docClone.querySelector('head');
+        if (headEl) headEl.insertBefore(preloadScript, headEl.firstChild);
+
+        const htmlContent = '<!DOCTYPE html>\n' + docClone.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const safeSlug = candidateName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kinetic-resume';
+        a.href = url;
+        a.download = `${safeSlug}-interactive-machines.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    function createCompactSharePayload() {
+      return {
+        v: 1,
+        n: activeProfileLabelEl.textContent.trim() || 'Kai Kleinbard',
+        cm: activeProfileMetaEl ? activeProfileMetaEl.textContent.trim() : '',
+        cs: activeProfileSubmetaEl ? activeProfileSubmetaEl.textContent.trim() : '',
+        d: isDarkPolarity ? 1 : 0,
+        t: currentResumeRawText || '',
+        e: ENDEAVORS.map(item => ({
+          t: item.title,
+          p: item.indexPhrase,
+          h: item.hook,
+          r: item.role,
+          d: item.period,
+          s: item.summary,
+          a: item.archetype || '',
+          m: (item.metrics || []).map(m => [m.label, m.value]),
+          n: (item.nodes || []).map(n => [n.name, n.detail, n.pos])
+        }))
+      };
+    }
+
+    function hydrateResumeFromCompactPayload(data) {
+      if (!data) return null;
+      if (typeof data === 'string') {
+        return { rawTextOnly: data };
+      }
+      if (Array.isArray(data.e) && data.e.length > 0) {
+        const endeavors = data.e.map((e, idx) => ({
+          id: `shared-${idx}`,
+          num: String(idx + 1).padStart(2, '0'),
+          title: e.t || `Endeavor 0${idx + 1}`,
+          indexPhrase: e.p || e.r || '',
+          hook: e.h || e.s || '',
+          role: e.r || '',
+          period: e.d || '',
+          summary: e.s || e.h || '',
+          archetype: e.a || MACHINE_ARCHETYPES[idx % MACHINE_ARCHETYPES.length],
+          metrics: (e.m || []).map(pair => ({ label: pair[0] || '', value: pair[1] || '' })),
+          nodes: (e.n || []).map((tuple, nIdx) => ({
+            id: String(nIdx + 1).padStart(2, '0'),
+            name: tuple[0] || `Component 0${nIdx + 1}`,
+            detail: tuple[1] || e.h || '',
+            pos: tuple[2] || DEFAULT_NODE_COORDS[nIdx % DEFAULT_NODE_COORDS.length]
+          }))
+        }));
+        return {
+          candidateName: data.n || 'Shared Resume',
+          candidateMeta: data.cm || endeavors[0]?.role || '',
+          candidateSubmeta: data.cs || '',
+          endeavors,
+          rawText: data.t || '',
+          isDark: data.d === 1
+        };
+      }
+      return null;
+    }
+
+    if (btnShareLink) {
+      btnShareLink.addEventListener('click', async () => {
+        try {
+          const payloadStr = JSON.stringify(createCompactSharePayload());
+          const compressedToken = await compressToUrlSafeBase64(payloadStr);
+          const baseUrl = window.location.href.split('#')[0];
+          const shareUrl = `${baseUrl}#r=${compressedToken}`;
+
+          try {
+            window.history.replaceState(null, '', `#r=${compressedToken}`);
+          } catch (_) {}
+
+          copyTextToClipboard(shareUrl);
+          shareUrlInput.value = shareUrl;
+          shareFeedbackMsg.textContent = 'Compressed resume link copied to clipboard';
+          shareFeedbackTray.classList.remove('hidden');
+          shareFeedbackTray.classList.add('flex');
+        } catch (err) {
+          shareFeedbackMsg.textContent = 'Unable to compress share link';
+          shareFeedbackTray.classList.remove('hidden');
+          shareFeedbackTray.classList.add('flex');
+        }
+      });
+    }
+
+    if (btnCloseShareTray) {
+      btnCloseShareTray.addEventListener('click', () => {
+        shareFeedbackTray.classList.add('hidden');
+        shareFeedbackTray.classList.remove('flex');
+      });
+    }
+
+    // Restore state on startup if opened from a Standalone Export, Share Link, or Saved Preference
+    async function initStartupResumeState() {
+      let themeAppliedFromExportOrLink = false;
+
+      // 1. Check if this file is a downloaded standalone HTML export
+      if (EXPORTED_STATE && Array.isArray(EXPORTED_STATE.endeavors)) {
+        ENDEAVORS = EXPORTED_STATE.endeavors;
+        setCandidateHeader(
+          EXPORTED_STATE.candidateName || 'Resume',
+          EXPORTED_STATE.candidateMeta || '',
+          EXPORTED_STATE.candidateSubmeta || ''
+        );
+        document.title = `${EXPORTED_STATE.candidateName} — Interactive Kinetic Machines`;
+        const compilerToolbar = document.getElementById('compiler-toolbar-row');
+        if (compilerToolbar) compilerToolbar.remove();
+        if (compilerModalEl) compilerModalEl.remove();
+
+        const savedPref = readInitialWindowThemePreference();
+        const targetPolarity = savedPref !== undefined ? savedPref : !!EXPORTED_STATE.isDarkPolarity;
+        applyPolarity(targetPolarity, false);
+        themeAppliedFromExportOrLink = true;
+        return;
+      }
+
+      // 2. Check if opened with a compressed share link (#r=... or ?r=...)
+      const hashMatch = window.location.hash.match(/[#&]r=([^&]+)/);
+      const queryMatch = window.location.search.match(/[?&]r=([^&]+)/);
+      const rawToken = hashMatch ? hashMatch[1] : (queryMatch ? queryMatch[1] : null);
+      if (rawToken) {
+        try {
+          const decompressedStr = await decompressFromUrlSafeBase64(decodeURIComponent(rawToken));
+          let parsedData = null;
+          try {
+            parsedData = JSON.parse(decompressedStr);
+          } catch (_) {
+            parsedData = decompressedStr;
+          }
+          const hydrated = hydrateResumeFromCompactPayload(parsedData);
+          if (hydrated) {
+            if (hydrated.isDark !== undefined) {
+              applyPolarity(hydrated.isDark, true);
+              themeAppliedFromExportOrLink = true;
+            }
+            if (hydrated.endeavors) {
+              ENDEAVORS = hydrated.endeavors;
+              currentResumeRawText = hydrated.rawText || '';
+              setCandidateHeader(hydrated.candidateName, hydrated.candidateMeta, hydrated.candidateSubmeta);
+              if (btnResetKaiEl) btnResetKaiEl.classList.remove('hidden');
+            } else if (hydrated.rawTextOnly) {
+              currentResumeRawText = hydrated.rawTextOnly;
+              const compiled = await compileResumeTextToMachines(hydrated.rawTextOnly);
+              ENDEAVORS = compiled.endeavors;
+              setCandidateHeader(compiled.candidateName, compiled.candidateMeta, compiled.candidateSubmeta);
+              if (btnResetKaiEl) btnResetKaiEl.classList.remove('hidden');
+            }
+          }
+        } catch (_) {
+          // Fallback to default resume if hash is malformed
+        }
+      }
+
+      // 3. Apply saved theme preference on subsequent loads if not overridden by a freshly opened link
+      if (!themeAppliedFromExportOrLink) {
+        const savedPref = readInitialWindowThemePreference();
+        if (savedPref !== undefined) {
+          applyPolarity(savedPref, false);
+        }
+      }
+      window.__themeAppliedFromExportOrLink = themeAppliedFromExportOrLink;
+    }
+
+    window.onload = async function () {
+      onResize();
+      await initStartupResumeState();
+      selectEndeavor(0);
+      requestAnimationFrame(animate);
+    };
+  </script>
+
+  <!-- Cloud User Preference Persistence for Theme Polarity across subsequent loads -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    (async function initThemeCloudPersistence() {
+      try {
+        if (typeof __firebase_config === 'undefined' || !__firebase_config) return;
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kinetic-endeavors-app';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const prefRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'ui_settings');
+
+        window.__saveCloudThemePreference = async (isDark) => {
+          if (!auth.currentUser) return;
+          try {
+            await setDoc(prefRef, { isDarkPolarity: !!isDark, updatedAt: Date.now() }, { merge: true });
+          } catch (_) {}
+        };
+
+        if (!window.__themeAppliedFromExportOrLink) {
+          const snap = await getDoc(prefRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            if (typeof data.isDarkPolarity === 'boolean' && typeof applyPolarity === 'function') {
+              applyPolarity(data.isDarkPolarity, false);
+            }
+          }
+        } else if (typeof isDarkPolarity === 'boolean') {
+          await window.__saveCloudThemePreference(isDarkPolarity);
+        }
+      } catch (_) {
+        // Silent fallback if cloud persistence is unavailable in standalone local file
+      }
+    })();
+  </script>
+</body>
+</html>
