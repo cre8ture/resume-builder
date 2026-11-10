@@ -223,15 +223,25 @@
     body.diagram-mode .callout-tag .diagram-node-content-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
     }
-    body.diagram-mode .callout-tag .diagram-mini-canvas {
-      width: 50px;
-      height: 50px;
+    body.diagram-mode .callout-tag .diagram-part-3d-slot {
+      width: 56px;
+      height: 56px;
       flex-shrink: 0;
-      border: 1px solid var(--border-hairline);
+      border: 1px dashed var(--border-hairline);
       background: var(--bg-primary);
       display: block;
+      position: relative;
+    }
+    #three-canvas {
+      position: relative;
+      z-index: 5;
+      display: block;
+    }
+    body.diagram-mode #three-canvas {
+      z-index: 30;
+      pointer-events: none;
     }
     body.diagram-mode .callout-tag .tag-title {
       font-family: 'Space Grotesk', sans-serif;
@@ -922,9 +932,6 @@
         roughness: 0.72,
         metalness: 0.12,
         wireframe: isWireframe,
-        transparent: true,
-        opacity: machineAlpha,
-        depthWrite: machineAlpha > 0.18,
         polygonOffset: true,
         polygonOffsetFactor: 1,
         polygonOffsetUnits: 1
@@ -935,9 +942,6 @@
         roughness: 0.6,
         metalness: 0.22,
         wireframe: isWireframe,
-        transparent: true,
-        opacity: machineAlpha,
-        depthWrite: machineAlpha > 0.18,
         polygonOffset: true,
         polygonOffsetFactor: 1,
         polygonOffsetUnits: 1
@@ -953,7 +957,7 @@
       matWire = new THREE.LineBasicMaterial({
         color: strokeColor,
         transparent: true,
-        opacity: (dark ? 0.52 : 0.62) * machineAlpha
+        opacity: dark ? 0.52 : 0.62
       });
 
       matLine = new THREE.LineBasicMaterial({
@@ -974,7 +978,7 @@
     function updateThreeSceneOpacity(alpha) {
       const a = Math.max(0, Math.min(1, alpha));
       const visible = a > 0.008;
-      if (currentMachineGroup) currentMachineGroup.visible = visible;
+      if (currentMachineGroup) currentMachineGroup.visible = true;
       if (floorGroup) {
         floorGroup.visible = visible;
         floorGroup.children.forEach(grid => {
@@ -988,13 +992,14 @@
           }
         });
       }
-      if (!visible) return;
-      if (matBody) { matBody.opacity = a; matBody.depthWrite = a > 0.18; }
-      if (matDark) { matDark.opacity = a; matDark.depthWrite = a > 0.18; }
       if (matAccent) matAccent.opacity = a;
       if (matPulse) matPulse.opacity = a;
-      if (matWire) matWire.opacity = (isDarkPolarity ? 0.52 : 0.62) * a;
       if (matLine) matLine.opacity = 0.32 * a;
+      if (currentMachineGroup && currentMachineGroup.userData && currentMachineGroup.userData.scaffoldingChildren) {
+        currentMachineGroup.userData.scaffoldingChildren.forEach(ch => {
+          ch.visible = visible;
+        });
+      }
     }
 
     function addCADMesh(geometry, material, parent, explodeVec = [0, 0, 0]) {
@@ -1734,168 +1739,11 @@
 
     /**
      * ============================================================================
-     * MINIATURE LIVE 3D COMPONENT PREVIEW (FOR DIAGRAM MODE CARDS)
-     * ============================================================================
-     */
-    const miniScene = new THREE.Scene();
-    const miniCamera = new THREE.PerspectiveCamera(34, 1, 0.1, 30);
-    miniCamera.position.set(2.3, 1.75, 2.65);
-    miniCamera.lookAt(0, 0, 0);
-
-    const miniRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    miniRenderer.setSize(104, 104);
-    miniRenderer.setPixelRatio(1);
-
-    const miniAmbient = new THREE.AmbientLight(0xffffff, 0.82);
-    miniScene.add(miniAmbient);
-    const miniDirLight = new THREE.DirectionalLight(0xffffff, 0.72);
-    miniDirLight.position.set(4, 7, 5);
-    miniScene.add(miniDirLight);
-
-    const miniRootGroup = new THREE.Group();
-    miniScene.add(miniRootGroup);
-
-    function createMiniNodeMaterials() {
-      const dark = isDarkPolarity;
-      return {
-        body: new THREE.MeshStandardMaterial({
-          color: dark ? 0x222220 : 0xe5e3dc,
-          roughness: 0.65,
-          metalness: 0.16,
-          wireframe: isWireframe,
-          polygonOffset: true,
-          polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1
-        }),
-        dark: new THREE.MeshStandardMaterial({
-          color: dark ? 0x333330 : 0xc6c4bc,
-          roughness: 0.55,
-          metalness: 0.24,
-          wireframe: isWireframe,
-          polygonOffset: true,
-          polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1
-        }),
-        wire: new THREE.LineBasicMaterial({
-          color: dark ? 0xd8d7d2 : 0x181818,
-          transparent: true,
-          opacity: isWireframe ? 0.92 : 0.62
-        })
-      };
-    }
-
-    function addMiniSolid(geo, mat, wireMat, parent) {
-      const m = new THREE.Mesh(geo, mat);
-      const edges = new THREE.EdgesGeometry(geo, 18);
-      m.add(new THREE.LineSegments(edges, wireMat));
-      parent.add(m);
-      return m;
-    }
-
-    function buildMiniSpurGear(radius, thickness, teeth, mats) {
-      const g = new THREE.Group();
-      addMiniSolid(new THREE.CylinderGeometry(radius, radius, thickness, 20), mats.body, mats.wire, g);
-      addMiniSolid(new THREE.CylinderGeometry(radius * 0.4, radius * 0.4, thickness * 1.3, 12), mats.dark, mats.wire, g);
-      const toothGeo = new THREE.BoxGeometry(radius * 0.24, thickness * 0.9, radius * 0.28);
-      for (let i = 0; i < teeth; i++) {
-        const a = (i / teeth) * Math.PI * 2;
-        const t = addMiniSolid(toothGeo, mats.body, mats.wire, g);
-        t.position.set(Math.cos(a) * (radius * 1.07), 0, Math.sin(a) * (radius * 1.07));
-        t.rotation.y = -a;
-      }
-      return g;
-    }
-
-    function createMini3DPartForNode(nodeIdx) {
-      const mats = createMiniNodeMaterials();
-      const group = new THREE.Group();
-      let animateFn = null;
-      const variant = nodeIdx % 5;
-
-      if (variant === 0) {
-        // Tri-axial Gyroscope Core
-        const r1 = addMiniSolid(new THREE.TorusGeometry(0.95, 0.065, 10, 28), mats.body, mats.wire, group);
-        const r2 = addMiniSolid(new THREE.TorusGeometry(0.68, 0.06, 10, 24), mats.dark, mats.wire, group);
-        const core = addMiniSolid(new THREE.OctahedronGeometry(0.36, 0), mats.body, mats.wire, group);
-        animateFn = (t) => {
-          r1.rotation.y = t * 1.3;
-          r1.rotation.x = t * 0.5;
-          r2.rotation.x = -t * 1.7;
-          r2.rotation.z = t * 1.1;
-          core.rotation.y = -t * 2.4;
-        };
-      } else if (variant === 1) {
-        // Interlocking Spur Gear Pair
-        const g1 = buildMiniSpurGear(0.62, 0.24, 12, mats);
-        g1.rotation.x = Math.PI / 2;
-        g1.position.set(-0.38, -0.18, 0);
-        group.add(g1);
-        const g2 = buildMiniSpurGear(0.42, 0.24, 8, mats);
-        g2.rotation.x = Math.PI / 2;
-        g2.position.set(0.48, 0.36, 0);
-        group.add(g2);
-        animateFn = (t) => {
-          g1.rotation.z = t * 1.6;
-          g2.rotation.z = -t * 2.4;
-        };
-      } else if (variant === 2) {
-        // Reciprocating Twin Pistons + Crank Gear
-        const crank = buildMiniSpurGear(0.44, 0.2, 10, mats);
-        crank.rotation.x = Math.PI / 2;
-        crank.position.set(0, -0.42, 0);
-        group.add(crank);
-        const pL = addMiniSolid(new THREE.CylinderGeometry(0.24, 0.24, 0.58, 12), mats.body, mats.wire, group);
-        const pR = addMiniSolid(new THREE.CylinderGeometry(0.24, 0.24, 0.58, 12), mats.dark, mats.wire, group);
-        animateFn = (t) => {
-          crank.rotation.z = t * 2.4;
-          pL.position.set(-0.34, 0.25 + Math.sin(t * 3.2) * 0.26, 0);
-          pR.position.set(0.34, 0.25 + Math.sin(t * 3.2 + Math.PI) * 0.26, 0);
-        };
-      } else if (variant === 3) {
-        // Counter-Rotating Axial Turbine
-        const s1 = buildMiniSpurGear(0.76, 0.18, 14, mats);
-        s1.rotation.z = Math.PI / 2;
-        s1.position.x = -0.28;
-        group.add(s1);
-        const s2 = buildMiniSpurGear(0.62, 0.18, 12, mats);
-        s2.rotation.z = Math.PI / 2;
-        s2.position.x = 0.28;
-        group.add(s2);
-        const shaft = addMiniSolid(new THREE.CylinderGeometry(0.11, 0.11, 1.5, 10), mats.dark, mats.wire, group);
-        shaft.rotation.z = Math.PI / 2;
-        animateFn = (t) => {
-          s1.rotation.x = t * 2.6;
-          s2.rotation.x = -t * 3.1;
-          group.rotation.y = Math.sin(t * 0.6) * 0.35;
-        };
-      } else {
-        // Harmonic Wave Cam & Differential Cage
-        const cage = addMiniSolid(new THREE.BoxGeometry(1.18, 0.78, 0.78), mats.dark, mats.wire, group);
-        const inner = buildMiniSpurGear(0.5, 0.22, 10, mats);
-        group.add(inner);
-        animateFn = (t) => {
-          cage.rotation.y = t * 0.95;
-          cage.rotation.x = Math.sin(t * 1.4) * 0.35;
-          inner.rotation.z = -t * 2.6;
-          inner.rotation.x = t * 1.5;
-        };
-      }
-
-      group.visible = false;
-      miniRootGroup.add(group);
-      return { group, animateFn };
-    }
-
-    /**
-     * ============================================================================
      * BUILD MACHINE + VIEWPORT-SAFE CALLOUT TAGS / DIAGRAM CARDS
      * ============================================================================
      */
     function buildThreeMachineForEndeavor(index) {
       clearCurrentMachine();
-      while (miniRootGroup.children.length > 0) {
-        miniRootGroup.remove(miniRootGroup.children[0]);
-      }
       const item = ENDEAVORS[index];
       const builders = [
         buildQuantumSkyMachine,
@@ -1915,6 +1763,65 @@
       }
       builderFn(currentMachineGroup);
 
+      // Partition the 3D machine parts into per-node sub-clusters so the 3D machine
+      // physically breaks apart and miniaturizes each part into its diagram card slot
+      const nodesList = item.nodes || [];
+      const packetMeshSet = new Set(activeEnergyPackets.map(p => p.mesh));
+      const initialChildren = [...currentMachineGroup.children];
+      const partCandidates = [];
+      const scaffoldingChildren = [];
+
+      initialChildren.forEach(ch => {
+        if (ch.isLine || packetMeshSet.has(ch)) {
+          scaffoldingChildren.push(ch);
+        } else {
+          partCandidates.push(ch);
+        }
+      });
+
+      const partClusterGroups = nodesList.map((n) => {
+        const g = new THREE.Group();
+        g.userData.nodePos = new THREE.Vector3(...(n.pos || [0, 0, 0]));
+        g.userData.explodedChildren = [];
+        currentMachineGroup.add(g);
+        return g;
+      });
+
+      if (partClusterGroups.length > 0) {
+        partCandidates.forEach(ch => {
+          let bestIdx = 0;
+          let bestDist = Infinity;
+          partClusterGroups.forEach((cg, idx) => {
+            const d = ch.position.distanceToSquared(cg.userData.nodePos);
+            if (d < bestDist) {
+              bestDist = d;
+              bestIdx = idx;
+            }
+          });
+          partClusterGroups[bestIdx].add(ch);
+          if (ch.userData && ch.userData.basePos && ch.userData.explodeVec) {
+            partClusterGroups[bestIdx].userData.explodedChildren.push(ch);
+          }
+        });
+
+        // Compute each cluster's local centroid and ensure every cluster has a moving 3D mechanism
+        partClusterGroups.forEach((cg, idx) => {
+          if (cg.children.length === 0) {
+            const fallbackGear = createSpurGear(0.42, 0.2, 10, [0, 0, 0]);
+            fallbackGear.position.copy(cg.userData.nodePos);
+            cg.add(fallbackGear);
+            dynamicUpdaters.push((t, speed) => {
+              fallbackGear.rotation.z = t * 1.8 * speed * (idx % 2 === 0 ? 1 : -1);
+              fallbackGear.rotation.x = Math.sin(t * 1.1) * 0.35;
+            });
+          }
+          const centroid = new THREE.Vector3();
+          cg.children.forEach(c => centroid.add(c.position));
+          centroid.divideScalar(Math.max(1, cg.children.length));
+          cg.userData.centroid = centroid;
+        });
+      }
+
       const diagramSpec = getEndeavorDiagramSpec(item, index);
       buildDiagramSvgForEndeavor(item, index);
 
@@ -1922,12 +1829,13 @@
       const nodeMeshes = [];
       const nodeTags = [];
 
-      (item.nodes || []).forEach((n, idx) => {
+      nodesList.forEach((n, idx) => {
         const anchorGeo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
         const anchorMesh = new THREE.Mesh(anchorGeo, matAccent);
         anchorMesh.position.set(...(n.pos || [0, 0, 0]));
         currentMachineGroup.add(anchorMesh);
         nodeMeshes.push(anchorMesh);
+        scaffoldingChildren.push(anchorMesh);
 
         // Compute connected peer node IDs for the schematic card footer
         const linkedPeers = diagramSpec.connections
@@ -1951,7 +1859,7 @@
           </div>
           <div class="diagram-node-body">
             <div class="diagram-node-content-row">
-              <canvas class="diagram-mini-canvas" width="104" height="104"></canvas>
+              <div class="diagram-part-3d-slot"></div>
               <p class="diagram-node-detail">${n.detail || item.hook || ''}</p>
             </div>
             <div class="diagram-node-footer">
@@ -1961,14 +1869,12 @@
           </div>
         `;
 
-        const miniCanvasEl = tag.querySelector('.diagram-mini-canvas');
-        const miniPart = createMini3DPartForNode(idx);
+        const slotEl = tag.querySelector('.diagram-part-3d-slot');
 
         const tagObj = {
           el: tag,
-          miniCanvasEl,
-          miniCtx: miniCanvasEl ? miniCanvasEl.getContext('2d') : null,
-          miniPart,
+          slotEl,
+          clusterGroup: partClusterGroups[idx] || null,
           pos3D: new THREE.Vector3(...(n.pos || [0, 0, 0])),
           normDiag: normCoord,
           dragOffset: { x: 0, y: 0 },
@@ -2018,6 +1924,8 @@
 
       currentMachineGroup.userData.nodeMeshes = nodeMeshes;
       currentMachineGroup.userData.nodeTags = nodeTags;
+      currentMachineGroup.userData.partClusterGroups = partClusterGroups;
+      currentMachineGroup.userData.scaffoldingChildren = scaffoldingChildren;
       updateThreeSceneOpacity(1 - diagramTransition);
       updateActiveNodeHighlight();
     }
@@ -2392,25 +2300,24 @@
         targetSpherical.theta += 0.0012;
       }
       updateCameraFromSpherical();
+      camera.updateMatrixWorld();
 
       pulseBoost = Math.max(0, pulseBoost - 0.025);
       const speedMult = 1 + pulseBoost;
 
-      if (machineAlpha > 0.01) {
-        dynamicUpdaters.forEach(fn => fn(elapsed, speedMult));
-      }
+      dynamicUpdaters.forEach(fn => fn(elapsed, speedMult));
 
-      // Smoothly interpolate exploded view offsets (+ radial expansion during diagram transition)
-      if (currentMachineGroup && machineAlpha > 0.01) {
-        const explodeFactor = (isExploded ? 1.0 : 0.0) + diagramTransition * 0.85;
-        currentMachineGroup.children.forEach(child => {
-          if (child.userData && child.userData.basePos && child.userData.explodeVec) {
+      // Smoothly interpolate exploded view offsets (when in 3D machine mode)
+      if (currentMachineGroup && currentMachineGroup.userData.partClusterGroups) {
+        const explodeFactor = (isExploded ? 1.0 : 0.0) * (1 - diagramTransition);
+        currentMachineGroup.userData.partClusterGroups.forEach(cg => {
+          (cg.userData.explodedChildren || []).forEach(child => {
             const target = child.userData.basePos.clone();
             if (explodeFactor > 0.001) {
               target.addScaledVector(child.userData.explodeVec, explodeFactor);
             }
             child.position.lerp(target, 0.09);
-          }
+          });
         });
       }
 
@@ -2449,8 +2356,9 @@
         const spanY = Math.max(75, (stageBottomPad - stageTopPad) * 0.38 * explodeSpread);
 
         const nodeTags = currentMachineGroup.userData.nodeTags;
+        const refNdc = currentMachineGroup.position.clone().project(camera);
 
-        nodeTags.forEach(tagObj => {
+        nodeTags.forEach((tagObj, idx) => {
           const worldVec = tagObj.pos3D.clone();
           worldVec.add(currentMachineGroup.position);
           worldVec.project(camera);
@@ -2500,16 +2408,28 @@
             tagObj.el.style.top = `${sy}px`;
           }
 
-          // Render live miniature moving 3D Three.js component inside the diagram card
-          if (diagramTransition > 0.05 && tagObj.miniPart && tagObj.miniCtx) {
-            if (tagObj.miniPart.animateFn) {
-              tagObj.miniPart.animateFn(elapsedTime * speedMult);
+          // 4. Break apart & miniaturize the actual 3D machine part cluster into its card's 3D slot
+          if (tagObj.clusterGroup && w > 0 && h > 0) {
+            let slotX = sx - tagW * 0.31;
+            let slotY = sy + 6;
+            if (tagObj.slotEl && diagramTransition > 0.15) {
+              const sRect = tagObj.slotEl.getBoundingClientRect();
+              if (sRect.width > 8) {
+                slotX = (sRect.left - wrapperRect.left) + sRect.width * 0.5;
+                slotY = (sRect.top - wrapperRect.top) + sRect.height * 0.5;
+              }
             }
-            tagObj.miniPart.group.visible = true;
-            miniRenderer.render(miniScene, miniCamera);
-            tagObj.miniCtx.clearRect(0, 0, 104, 104);
-            tagObj.miniCtx.drawImage(miniRenderer.domElement, 0, 0, 104, 104);
-            tagObj.miniPart.group.visible = false;
+            const ndcX = (slotX / w) * 2 - 1;
+            const ndcY = -(slotY / h) * 2 + 1;
+            const targetWorld = new THREE.Vector3(ndcX, ndcY, refNdc.z).unproject(camera);
+            const targetLocal = targetWorld.sub(currentMachineGroup.position);
+
+            const C = tagObj.clusterGroup.userData.centroid || tagObj.pos3D;
+            const s = 1 - 0.77 * diagramTransition; // Miniaturizes to 23% scale in Diagram Mode
+            const curCenter = C.clone().lerp(targetLocal, diagramTransition);
+
+            tagObj.clusterGroup.scale.setScalar(s);
+            tagObj.clusterGroup.position.copy(curCenter).addScaledVector(C, -s);
           }
         });
 
@@ -2594,11 +2514,7 @@
         }
       }
 
-      if (machineAlpha > 0.008) {
-        renderer.render(scene, camera);
-      } else {
-        renderer.clear();
-      }
+      renderer.render(scene, camera);
     }
 
     /**
