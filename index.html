@@ -352,6 +352,60 @@
       border-color: var(--accent-active);
     }
 
+    /* Architectural Mode Toggle Switch (MACHINE <-> DIAGRAM) */
+    .cad-mode-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-panel);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .cad-mode-switch:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-card);
+    }
+    .cad-mode-switch .switch-label {
+      color: var(--text-muted);
+      transition: color 0.18s ease, font-weight 0.18s ease;
+    }
+    .cad-mode-switch:not(.is-diagram) .switch-label-machine,
+    .cad-mode-switch.is-diagram .switch-label-diagram {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .cad-mode-switch .switch-track {
+      position: relative;
+      width: 22px;
+      height: 11px;
+      border: 1px solid var(--border-strong);
+      border-radius: 9999px;
+      background: var(--bg-primary);
+      flex-shrink: 0;
+    }
+    .cad-mode-switch .switch-thumb {
+      position: absolute;
+      top: 1.5px;
+      left: 1.5px;
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--text-primary);
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .cad-mode-switch.is-diagram .switch-thumb {
+      transform: translateX(11px);
+    }
+
     #canvas-wrapper {
       position: fixed;
       inset: 0;
@@ -454,14 +508,14 @@
             <span class="font-mono-tech text-[9px] uppercase tracking-widest" style="color: var(--text-muted);">SCHEMATIC ARCHITECTURE VIEW</span>
             <span id="diagram-topology-label" class="font-mono-tech text-[10px] font-medium" style="color: var(--text-primary);">5 SUBSYSTEMS · CONNECTED BUS</span>
           </div>
-          <button id="btn-return-machine" type="button" class="cad-btn active py-1 px-2.5 ml-2 flex items-center gap-1 font-medium" title="Animate back to 3D Kinetic Machine (Esc)">
+          <button id="btn-return-machine" type="button" class="cad-btn py-1 px-2.5 ml-2 flex items-center gap-1 font-medium" title="Animate back to 3D Kinetic Machine (Esc)">
             <span>← 3D MACHINE</span>
           </button>
         </div>
 
         <div id="top-hud-card" class="max-w-lg w-full pointer-events-auto p-4 md:p-5 hairline-box glass-panel transition-all text-left flex flex-col items-start rounded-sm ml-auto">
           
-          <!-- Minimal Header Row: Figure ID + Title on Left, Diagram Mode & Expand Toggle on Right -->
+          <!-- Minimal Header Row: Figure ID + Title on Left, Mode Toggle Switch & Expand Toggle on Right -->
           <div class="w-full flex items-center justify-between gap-2 text-left">
             <div class="flex items-center justify-start gap-2 min-w-0 text-left">
               <span id="stage-index" class="font-mono-tech text-[11px] uppercase tracking-wider shrink-0 text-left" style="color: var(--text-muted);">FIG. 01</span>
@@ -470,9 +524,10 @@
               </h2>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
-              <button id="btn-diagram-mode" type="button" class="cad-btn px-2.5 py-1 flex items-center gap-1 font-medium" title="Toggle animated schematic diagram view of all project parts">
-                <span id="btn-diagram-icon" class="text-[10px] leading-none">◇</span>
-                <span id="btn-diagram-label">Diagram</span>
+              <button id="btn-diagram-mode" type="button" role="switch" aria-checked="false" class="cad-mode-switch" title="Switch between 3D Machine and Schematic Diagram (D)">
+                <span class="switch-label switch-label-machine">MACHINE</span>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+                <span class="switch-label switch-label-diagram">DIAGRAM</span>
               </button>
               <button id="btn-toggle-dossier" type="button" class="font-mono-tech text-[10px] uppercase tracking-wider px-2 py-1 hairline-box hover:opacity-80 transition-opacity shrink-0" style="color: var(--text-secondary);">
                 Read project +
@@ -523,7 +578,11 @@
           <span id="stage-hint-text">DRAG TO ORBIT · CLICK NODE TO INSPECT</span>
         </div>
         <div class="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 ml-auto">
-          <button id="btn-diagram-toolbar" class="cad-btn font-medium" title="Toggle Schematic Diagram Mode (D)">◇ DIAGRAM</button>
+          <button id="btn-diagram-toolbar" type="button" role="switch" aria-checked="false" class="cad-mode-switch" title="Switch between 3D Machine and Schematic Diagram (D)">
+            <span class="switch-label switch-label-machine">MACHINE</span>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-label switch-label-diagram">DIAGRAM</span>
+          </button>
           <button id="btn-pulse" class="cad-btn" title="Surge Energy Flow">SURGE</button>
           <button id="btn-explode" class="cad-btn" title="Explode Assembly">EXPLODE</button>
           <button id="btn-wireframe" class="cad-btn" title="Blueprint Wireframe">X-RAY</button>
@@ -1989,21 +2048,16 @@
         pulseBoost = 1.4;
       }
 
-      // Sync top HUD button
+      // Sync top HUD toggle switch
       if (btnDiagramModeEl) {
-        btnDiagramModeEl.classList.toggle('active', isDiagramMode);
-      }
-      if (btnDiagramIconEl) {
-        btnDiagramIconEl.textContent = isDiagramMode ? '←' : '◇';
-      }
-      if (btnDiagramLabelEl) {
-        btnDiagramLabelEl.textContent = isDiagramMode ? '3D Machine' : 'Diagram';
+        btnDiagramModeEl.classList.toggle('is-diagram', isDiagramMode);
+        btnDiagramModeEl.setAttribute('aria-checked', String(isDiagramMode));
       }
 
-      // Sync bottom CAD toolbar button
+      // Sync bottom CAD toolbar toggle switch
       if (btnDiagramToolbarEl) {
-        btnDiagramToolbarEl.classList.toggle('active', isDiagramMode);
-        btnDiagramToolbarEl.textContent = isDiagramMode ? '← 3D MACHINE' : '◇ DIAGRAM';
+        btnDiagramToolbarEl.classList.toggle('is-diagram', isDiagramMode);
+        btnDiagramToolbarEl.setAttribute('aria-checked', String(isDiagramMode));
       }
 
       // Sync top-left stage banner
