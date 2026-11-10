@@ -578,11 +578,6 @@
           <span id="stage-hint-text">DRAG TO ORBIT · CLICK NODE TO INSPECT</span>
         </div>
         <div class="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 ml-auto">
-          <button id="btn-diagram-toolbar" type="button" role="switch" aria-checked="false" class="cad-mode-switch" title="Switch between 3D Machine and Schematic Diagram (D)">
-            <span class="switch-label switch-label-machine">MACHINE</span>
-            <span class="switch-track"><span class="switch-thumb"></span></span>
-            <span class="switch-label switch-label-diagram">DIAGRAM</span>
-          </button>
           <button id="btn-pulse" class="cad-btn" title="Surge Energy Flow">SURGE</button>
           <button id="btn-explode" class="cad-btn" title="Explode Assembly">EXPLODE</button>
           <button id="btn-wireframe" class="cad-btn" title="Blueprint Wireframe">X-RAY</button>
@@ -2054,12 +2049,6 @@
         btnDiagramModeEl.setAttribute('aria-checked', String(isDiagramMode));
       }
 
-      // Sync bottom CAD toolbar toggle switch
-      if (btnDiagramToolbarEl) {
-        btnDiagramToolbarEl.classList.toggle('is-diagram', isDiagramMode);
-        btnDiagramToolbarEl.setAttribute('aria-checked', String(isDiagramMode));
-      }
-
       // Sync top-left stage banner
       if (diagramStageBannerEl) {
         diagramStageBannerEl.classList.toggle('hidden', !isDiagramMode);
@@ -2085,9 +2074,6 @@
 
     if (btnDiagramModeEl) {
       btnDiagramModeEl.addEventListener('click', toggleDiagramMode);
-    }
-    if (btnDiagramToolbarEl) {
-      btnDiagramToolbarEl.addEventListener('click', toggleDiagramMode);
     }
     if (btnReturnMachineEl) {
       btnReturnMachineEl.addEventListener('click', () => setDiagramMode(false));
