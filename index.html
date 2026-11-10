@@ -1770,9 +1770,19 @@
       const initialChildren = [...currentMachineGroup.children];
       const partCandidates = [];
       const scaffoldingChildren = [];
+      const tmpBox = new THREE.Box3();
+      const tmpSize = new THREE.Vector3();
 
       initialChildren.forEach(ch => {
         if (ch.isLine || packetMeshSet.has(ch)) {
+          scaffoldingChildren.push(ch);
+          return;
+        }
+        tmpBox.setFromObject(ch);
+        tmpBox.getSize(tmpSize);
+        const maxExtent = Math.max(tmpSize.x, tmpSize.y, tmpSize.z);
+        // Large spanning rails/baseplates (> 2.15 units) are structural scaffolding that fades out
+        if (maxExtent > 2.15) {
           scaffoldingChildren.push(ch);
         } else {
           partCandidates.push(ch);
@@ -1788,6 +1798,7 @@
       });
 
       if (partClusterGroups.length > 0) {
+        const buckets = partClusterGroups.map(() => []);
         partCandidates.forEach(ch => {
           let bestIdx = 0;
           let bestDist = Infinity;
@@ -1798,13 +1809,25 @@
               bestIdx = idx;
             }
           });
-          partClusterGroups[bestIdx].add(ch);
-          if (ch.userData && ch.userData.basePos && ch.userData.explodeVec) {
-            partClusterGroups[bestIdx].userData.explodedChildren.push(ch);
-          }
+          buckets[bestIdx].push({ ch, dist: bestDist });
         });
 
-        // Compute each cluster's local centroid and ensure every cluster has a moving 3D mechanism
+        buckets.forEach((list, idx) => {
+          list.sort((a, b) => a.dist - b.dist);
+          list.forEach((itemEntry, itemIdx) => {
+            // Keep at most the 2 closest compact parts per node cluster so each miniature is tight & centered
+            if (itemIdx < 2 && itemEntry.dist < 2.25) {
+              partClusterGroups[idx].add(itemEntry.ch);
+              if (itemEntry.ch.userData && itemEntry.ch.userData.basePos && itemEntry.ch.userData.explodeVec) {
+                partClusterGroups[idx].userData.explodedChildren.push(itemEntry.ch);
+              }
+            } else {
+              scaffoldingChildren.push(itemEntry.ch);
+            }
+          });
+        });
+
+        // Compute each cluster's true 3D bounding box center & span, ensuring every cluster has a moving 3D mechanism
         partClusterGroups.forEach((cg, idx) => {
           if (cg.children.length === 0) {
             const fallbackGear = createSpurGear(0.42, 0.2, 10, [0, 0, 0]);
@@ -1815,10 +1838,13 @@
               fallbackGear.rotation.x = Math.sin(t * 1.1) * 0.35;
             });
           }
+          tmpBox.setFromObject(cg);
           const centroid = new THREE.Vector3();
-          cg.children.forEach(c => centroid.add(c.position));
-          centroid.divideScalar(Math.max(1, cg.children.length));
+          tmpBox.getCenter(centroid);
+          tmpBox.getSize(tmpSize);
+          const boundSpan = Math.max(0.75, tmpSize.length());
           cg.userData.centroid = centroid;
+          cg.userData.boundSpan = boundSpan;
         });
       }
 
@@ -2357,6 +2383,9 @@
 
         const nodeTags = currentMachineGroup.userData.nodeTags;
         const refNdc = currentMachineGroup.position.clone().project(camera);
+        const camDist = camera.position.distanceTo(currentMachineGroup.position);
+        const vFovRad = (camera.fov * Math.PI) / 180;
+        const worldPerPixel = h > 0 ? (2 * camDist * Math.tan(vFovRad * 0.5)) / h : 0.01;
 
         nodeTags.forEach((tagObj, idx) => {
           const worldVec = tagObj.pos3D.clone();
@@ -2409,14 +2438,23 @@
           }
 
           // 4. Break apart & miniaturize the actual 3D machine part cluster into its card's 3D slot
+          tagObj.slotClipRect = null;
           if (tagObj.clusterGroup && w > 0 && h > 0) {
-            let slotX = sx - tagW * 0.31;
+            let slotX = sx - tagW * 0.34;
             let slotY = sy + 6;
             if (tagObj.slotEl && diagramTransition > 0.15) {
               const sRect = tagObj.slotEl.getBoundingClientRect();
               if (sRect.width > 8) {
-                slotX = (sRect.left - wrapperRect.left) + sRect.width * 0.5;
-                slotY = (sRect.top - wrapperRect.top) + sRect.height * 0.5;
+                const localLeft = sRect.left - wrapperRect.left;
+                const localTop = sRect.top - wrapperRect.top;
+                slotX = localLeft + sRect.width * 0.5;
+                slotY = localTop + sRect.height * 0.5;
+                tagObj.slotClipRect = {
+                  x: Math.max(0, localLeft),
+                  y: Math.max(0, h - (localTop + sRect.height)),
+                  w: Math.max(0, sRect.width),
+                  h: Math.max(0, sRect.height)
+                };
               }
             }
             const ndcX = (slotX / w) * 2 - 1;
@@ -2425,7 +2463,9 @@
             const targetLocal = targetWorld.sub(currentMachineGroup.position);
 
             const C = tagObj.clusterGroup.userData.centroid || tagObj.pos3D;
-            const s = 1 - 0.77 * diagramTransition; // Miniaturizes to 23% scale in Diagram Mode
+            const boundSpan = tagObj.clusterGroup.userData.boundSpan || 1.4;
+            const sMini = Math.min(0.22, (36 * worldPerPixel) / boundSpan);
+            const s = 1 + (sMini - 1) * diagramTransition;
             const curCenter = C.clone().lerp(targetLocal, diagramTransition);
 
             tagObj.clusterGroup.scale.setScalar(s);
@@ -2512,8 +2552,32 @@
             edge.badgeTxtEl.setAttribute('fill', isConnectedToSelected ? 'var(--text-primary)' : 'var(--text-muted)');
           });
         }
+
+        // Clip docked 3D parts strictly to their .diagram-part-3d-slot box so they never cover card text
+        if (diagramTransition > 0.85) {
+          renderer.autoClear = false;
+          renderer.setScissorTest(false);
+          renderer.clear();
+          renderer.setScissorTest(true);
+          nodeTags.forEach(tagObj => {
+            if (!tagObj.clusterGroup || !tagObj.slotClipRect) return;
+            nodeTags.forEach(other => {
+              if (other.clusterGroup) other.clusterGroup.visible = (other === tagObj);
+            });
+            const r = tagObj.slotClipRect;
+            renderer.setScissor(r.x, r.y, r.w, r.h);
+            renderer.render(scene, camera);
+          });
+          nodeTags.forEach(other => {
+            if (other.clusterGroup) other.clusterGroup.visible = true;
+          });
+          renderer.setScissorTest(false);
+          renderer.autoClear = true;
+          return;
+        }
       }
 
+      renderer.setScissorTest(false);
       renderer.render(scene, camera);
     }
 
